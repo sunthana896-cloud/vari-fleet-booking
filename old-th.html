@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ระบบจองรถส่วนกลาง</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#1f2937;--mut:#6b7280;--pri:#1d4ed8;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--bd:#e5e7eb}
+@media(prefers-color-scheme:dark){:root{--bg:#111827;--card:#1f2937;--tx:#f3f4f6;--mut:#9ca3af;--pri:#60a5fa;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--bd:#374151}}
+*{box-sizing:border-box}body{margin:0;font-family:"Noto Sans Lao","Noto Sans Thai",system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+header{padding:14px 16px;background:var(--pri);color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+header h1{font-size:18px;margin:0}
+nav{display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap}
+nav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 14px;border-radius:8px;cursor:pointer}
+nav button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+main{padding:0 16px 40px;max-width:1000px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 3px}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--bd);border-radius:7px;background:var(--bg);color:var(--tx);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:600px){.row{grid-template-columns:1fr}}
+button.p{background:var(--pri);color:#fff;border:0;padding:10px 18px;border-radius:8px;cursor:pointer;margin-top:14px}
+button.s{background:transparent;border:1px solid var(--bd);color:var(--tx);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:12px}
+.tag{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.pending{background:#fef3c7;color:var(--warn)}.approved{background:#dcfce7;color:var(--ok)}.rejected,.cancelled{background:#fee2e2;color:var(--bad)}.done{background:#e5e7eb;color:var(--mut)}
+.msg{padding:10px;border-radius:8px;margin-top:10px;display:none}.msg.err{display:block;background:#fee2e2;color:var(--bad)}.msg.ok{display:block;background:#dcfce7;color:var(--ok)}
+.empty{color:var(--mut);text-align:center;padding:20px}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header><h1>🚗 ระบบจองรถส่วนกลาง</h1>
+<label style="margin:0;color:#fff;display:flex;gap:6px;align-items:center"><input type="checkbox" id="adm" style="width:auto"> โหมดผู้ดูแล (อนุมัติ/จัดการรถ)</label></header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<script>
+const KEY="carBookingV1";
+let db;try{db=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+db=db||{vehicles:[],bookings:[]};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ST={pending:"รออนุมัติ",approved:"อนุมัติแล้ว",rejected:"ไม่อนุมัติ",cancelled:"ยกเลิก"};
+const fmt=d=>d?new Date(d).toLocaleString("th-TH",{dateStyle:"short",timeStyle:"short"}):"";
+const veh=id=>db.vehicles.find(v=>v.id===id);
+const isAdmin=()=>$("#adm").checked;
+let tab="book";
+const tabs=[["book","จองรถ"],["list","รายการจอง"],["cal","ปฏิทินรายวัน"],["cars","ข้อมูลรถ"]];
+function nav(){$("#nav").innerHTML=tabs.map(([k,n])=>`<button class="${k===tab?"on":""}" onclick="tab='${k}';render()">${n}</button>`).join("")}
+function overlap(vid,s,e,skip){return db.bookings.find(b=>b.id!==skip&&b.vehicleId===vid&&["pending","approved"].includes(b.status)&&s<b.end&&e>b.start)}
+function render(){nav();({book:vBook,list:vList,cal:vCal,cars:vCars})[tab]()}
+function vBook(){
+ const act=db.vehicles.filter(v=>v.active!==false);
+ $("#app").innerHTML=`<div class="card"><h3>แบบฟอร์มจองรถ</h3>
+ ${act.length?"":'<div class="msg err">ยังไม่มีรถในระบบ — ให้ผู้ดูแลเพิ่มรถที่แท็บ "ข้อมูลรถ" ก่อน</div>'}
+ <div class="row"><div><label>ชื่อผู้จอง</label><input id="f_name"></div><div><label>แผนก</label><input id="f_dep"></div></div>
+ <div class="row"><div><label>เบอร์ติดต่อ</label><input id="f_tel"></div><div><label>จำนวนผู้โดยสาร</label><input id="f_pax" type="number" min="1"></div></div>
+ <label>รถ</label><select id="f_veh">${act.map(v=>`<option value="${v.id}">${esc(v.plate)} — ${esc(v.name)} (${esc(v.seats||"?")} ที่นั่ง)</option>`).join("")}</select>
+ <div class="row"><div><label>เริ่มใช้</label><input id="f_s" type="datetime-local"></div><div><label>คืนรถ</label><input id="f_e" type="datetime-local"></div></div>
+ <label>สถานที่ปลายทาง</label><input id="f_dest">
+ <label>วัตถุประสงค์</label><textarea id="f_pur" rows="2"></textarea>
+ <button class="p" onclick="submitBooking()">ส่งคำขอจอง</button><div id="msg" class="msg"></div></div>`;
+}
+function submitBooking(){
+ const g=i=>$("#"+i).value.trim(),m=$("#msg");
+ const b={id:uid(),name:g("f_name"),dep:g("f_dep"),tel:g("f_tel"),pax:g("f_pax"),vehicleId:g("f_veh"),start:g("f_s"),end:g("f_e"),dest:g("f_dest"),purpose:g("f_pur"),status:"pending",created:new Date().toISOString()};
+ const bad=t=>{m.className="msg err";m.textContent=t};
+ if(!b.name||!b.vehicleId||!b.start||!b.end||!b.dest)return bad("กรุณากรอก ชื่อ, รถ, เวลาเริ่ม-คืน และปลายทาง ให้ครบ");
+ if(b.end<=b.start)return bad("เวลาคืนรถต้องหลังเวลาเริ่มใช้");
+ const c=overlap(b.vehicleId,b.start,b.end);
+ if(c)return bad(`รถคันนี้ถูกจองแล้วโดย ${c.name} (${fmt(c.start)} – ${fmt(c.end)})`);
+ db.bookings.push(b);save();m.className="msg ok";m.textContent="ส่งคำขอแล้ว รอผู้ดูแลอนุมัติ";
+ ["f_name","f_dep","f_tel","f_pax","f_s","f_e","f_dest","f_pur"].forEach(i=>$("#"+i).value="");
+}
+function setStatus(id,s){const b=db.bookings.find(x=>x.id===id);if(!b)return;
+ if(s==="approved"){const c=overlap(b.vehicleId,b.start,b.end,id);if(c&&c.status==="approved")return alert("ชนกับการจองที่อนุมัติแล้วของ "+c.name)}
+ b.status=s;save();render()}
+function vList(){
+ const rows=[...db.bookings].sort((a,b)=>b.start.localeCompare(a.start));
+ $("#app").innerHTML=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">รายการจองทั้งหมด</h3><button class="s" onclick="exportCsv()">ส่งออก CSV</button></div>
+ <div class="scroll">${rows.length?`<table><tr><th>ผู้จอง</th><th>รถ</th><th>ช่วงเวลา</th><th>ปลายทาง</th><th>สถานะ</th><th></th></tr>${rows.map(b=>{const v=veh(b.vehicleId);return `<tr><td>${esc(b.name)}<br><small>${esc(b.dep)} ${esc(b.tel)}</small></td><td>${v?esc(v.plate):"(ลบแล้ว)"}</td><td>${fmt(b.start)}<br>– ${fmt(b.end)}</td><td>${esc(b.dest)}<br><small>${esc(b.purpose)}</small></td><td><span class="tag ${b.status}">${ST[b.status]}</span></td><td>${actions(b)}</td></tr>`}).join("")}</table>`:'<div class="empty">ยังไม่มีรายการจอง</div>'}</div></div>`;
+}
+function actions(b){
+ let h="";
+ if(isAdmin()&&b.status==="pending")h+=`<button class="s" onclick="setStatus('${b.id}','approved')">อนุมัติ</button> <button class="s" onclick="setStatus('${b.id}','rejected')">ไม่อนุมัติ</button> `;
+ if(["pending","approved"].includes(b.status))h+=`<button class="s" onclick="if(confirm('ยกเลิกการจองนี้?'))setStatus('${b.id}','cancelled')">ยกเลิก</button>`;
+ return h}
+function vCal(){
+ const d=window.calDay||new Date().toISOString().slice(0,10);window.calDay=d;
+ const s=d+"T00:00",e=d+"T23:59";
+ $("#app").innerHTML=`<div class="card"><h3>ปฏิทินรายวัน</h3><input type="date" value="${d}" onchange="calDay=this.value;vCal()" style="max-width:200px">
+ <div class="scroll"><table><tr><th>รถ</th><th>การจองในวันนี้</th></tr>${db.vehicles.filter(v=>v.active!==false).map(v=>{
+  const bs=db.bookings.filter(b=>b.vehicleId===v.id&&["pending","approved"].includes(b.status)&&b.start<=e&&b.end>=s).sort((a,b)=>a.start.localeCompare(b.start));
+  return `<tr><td>${esc(v.plate)}<br><small>${esc(v.name)}</small></td><td>${bs.length?bs.map(b=>`<div>${fmt(b.start)} – ${fmt(b.end)} · ${esc(b.name)} <span class="tag ${b.status}">${ST[b.status]}</span></div>`).join(""):'<span style="color:var(--ok)">ว่างทั้งวัน</span>'}</td></tr>`}).join("")||'<tr><td colspan=2 class="empty">ยังไม่มีรถในระบบ</td></tr>'}</table></div></div>`;
+}
+function vCars(){
+ $("#app").innerHTML=`${isAdmin()?`<div class="card"><h3>เพิ่มรถ</h3><div class="row"><div><label>ทะเบียน</label><input id="c_plate"></div><div><label>รุ่น/ชื่อรถ</label><input id="c_name"></div></div>
+ <div class="row"><div><label>จำนวนที่นั่ง</label><input id="c_seats" type="number"></div><div><label>หมายเหตุ</label><input id="c_note"></div></div><button class="p" onclick="addCar()">เพิ่มรถ</button></div>`:'<div class="msg err">เปิด "โหมดผู้ดูแล" ที่มุมขวาบนเพื่อเพิ่ม/แก้ไขรถ</div>'}
+ <div class="card"><h3>รถทั้งหมด</h3>${db.vehicles.length?`<table><tr><th>ทะเบียน</th><th>รุ่น</th><th>ที่นั่ง</th><th>สถานะ</th><th></th></tr>${db.vehicles.map(v=>`<tr><td>${esc(v.plate)}</td><td>${esc(v.name)}<br><small>${esc(v.note)}</small></td><td>${esc(v.seats)}</td><td>${v.active===false?"ปิดใช้งาน":"พร้อมใช้"}</td><td>${isAdmin()?`<button class="s" onclick="toggleCar('${v.id}')">${v.active===false?"เปิด":"ปิด"}</button>`:""}</td></tr>`).join("")}</table>`:'<div class="empty">ยังไม่มีรถ</div>'}</div>`;
+}
+function addCar(){const p=$("#c_plate").value.trim();if(!p)return alert("กรอกทะเบียนรถ");
+ db.vehicles.push({id:uid(),plate:p,name:$("#c_name").value.trim(),seats:$("#c_seats").value,note:$("#c_note").value.trim()});save();render()}
+function toggleCar(id){const v=veh(id);v.active=v.active===false;save();render()}
+function exportCsv(){
+ const q=s=>`"${String(s??"").replace(/"/g,'""')}"`;
+ const r=[["ผู้จอง","แผนก","เบอร์","รถ","เริ่ม","คืน","ปลายทาง","วัตถุประสงค์","สถานะ"],...db.bookings.map(b=>[b.name,b.dep,b.tel,veh(b.vehicleId)?.plate,b.start,b.end,b.dest,b.purpose,ST[b.status]])];
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+r.map(x=>x.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="car-bookings.csv";a.click()}
+$("#adm").onchange=render;render();
+</script>
+</body>
+</html>
