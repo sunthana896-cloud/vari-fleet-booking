@@ -1,0 +1,8 @@
+# ລະຫັດຜ່ານທົດສອບ — ຫ້າມຂຶ້ນ GitHub ເດັດຂາດ
+.claude/ACCOUNTS.txt
+
+# ໄຟລ໌ລະບົບ macOS
+.DS_Store
+
+# ເຄື່ອງມືພັດທະນາພາຍໃນເຄື່ອງ
+.claude/serve.py

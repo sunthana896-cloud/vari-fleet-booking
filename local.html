@@ -1,0 +1,636 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vari Fleet &amp; Meeting</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: ປະຕູເຂົ້າລະບົບພາບຖະໜົນ -> ແອັບແທັບ (ຈອງ / ລາຍການ / ຕາຕະລາງ / ລົດ) */
+:root{
+ --bg:#eaf0f1;--card:#ffffff;--ink:#132a31;--mut:#566d75;--line:#d3dee1;
+ --pri:#0e6b7b;--pri-ink:#ffffff;--road:#22333a;--amber:#f2a516;
+ --ok:#1b8a4b;--okbg:#dff3e7;--bad:#c2362b;--badbg:#fbe3e0;--warn:#9a6409;--warnbg:#fdf0d2;--done:#e3e9eb;
+ --nav:#17335f;
+ --font:"Noto Sans Lao","Phetsarath OT","Noto Sans Thai",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#0c161a;--card:#14242a;--ink:#e6f0f2;--mut:#93aab1;--line:#26404a;
+ --pri:#4cc2d6;--pri-ink:#06242b;--road:#060d10;--amber:#ffbf3c;
+ --ok:#5ad388;--okbg:#12361f;--bad:#ff8a7e;--badbg:#3d1915;--warn:#ffcb5c;--warnbg:#3a2a07;--done:#22353c;color-scheme:dark}}
+:root[data-theme="dark"]{
+ --bg:#0c161a;--card:#14242a;--ink:#e6f0f2;--mut:#93aab1;--line:#26404a;
+ --pri:#4cc2d6;--pri-ink:#06242b;--road:#060d10;--amber:#ffbf3c;
+ --ok:#5ad388;--okbg:#12361f;--bad:#ff8a7e;--badbg:#3d1915;--warn:#ffcb5c;--warnbg:#3a2a07;--done:#22353c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);font-size:15px;line-height:1.6;background:var(--bg);color:var(--ink);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding-block:16px 48px}
+[hidden]{display:none!important}
+
+/* ===== ໜ້າເຂົ້າສູ່ລະບົບ ===== */
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-block:24px}
+.gate-box{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.scene svg{display:block}
+.scene svg *{transform-box:fill-box}
+.cbob{animation:bob .4s ease-in-out infinite alternate}
+.hl{animation:blink 1.4s steps(2) infinite}
+.pin{animation:drop 3.6s cubic-bezier(.3,.1,.3,1) infinite}
+.rip{transform-origin:center;animation:rip 3.6s ease-out infinite}
+.cal{transform-origin:center;animation:pop 3.6s ease-out infinite}
+.tick{stroke-dasharray:46;animation:draw 3.6s ease-out infinite}
+.pp{transform-origin:50% 100%;animation:sit 5.2s ease-out infinite}
+.p2{animation-delay:.35s}.p3{animation-delay:.7s}.p4{animation-delay:1.05s}
+.b1,.b2,.b3,.b4{transform-origin:50% 100%;animation:bar 3s ease-in-out infinite alternate}
+.b2{animation-delay:.2s}.b3{animation-delay:.4s}.b4{animation-delay:.6s}
+.hand{transform-origin:0% 100%;animation:spin 6s linear infinite}
+@keyframes blink{50%{opacity:.25}}
+@keyframes drop{0%{transform:translateY(-46px);opacity:0}25%{opacity:1}45%{transform:translateY(0)}55%{transform:translateY(-7px)}65%,85%{transform:translateY(0);opacity:1}100%{transform:translateY(0);opacity:0}}
+@keyframes rip{0%,44%{transform:scale(.2);opacity:0}50%{opacity:.9}85%,100%{transform:scale(2.4);opacity:0}}
+@keyframes draw{0%,20%{stroke-dashoffset:46}55%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+@keyframes sit{0%,5%{transform:scale(0)}20%{transform:scale(1.15)}30%,90%{transform:scale(1)}100%{transform:scale(0)}}
+@keyframes bar{from{transform:scaleY(.35)}to{transform:scaleY(1)}}
+.scene{position:relative;height:170px;background:linear-gradient(#bfe3ee,#e9f6f9 70%);overflow:hidden}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .scene{background:linear-gradient(#0f2a35,#17404c 75%)}}
+:root[data-theme="dark"] .scene{background:linear-gradient(#0f2a35,#17404c 75%)}
+.hills{position:absolute;bottom:34px;left:0;width:200%;height:50px;background:radial-gradient(60px 40px at 40px 50px,#7bb7a6 98%,transparent) 0 0/160px 50px repeat-x;opacity:.55;animation:slide 14s linear infinite}
+.road{position:absolute;left:0;right:0;bottom:0;height:34px;background:var(--road)}
+.road::before{content:"";position:absolute;left:0;top:15px;width:200%;height:4px;background:repeating-linear-gradient(90deg,var(--amber) 0 26px,transparent 26px 56px);animation:slide .9s linear infinite}
+.car{position:absolute;bottom:26px;left:-120px;width:110px;animation:drive 5s cubic-bezier(.45,0,.2,1) infinite}
+.car .body{animation:bob .35s ease-in-out infinite alternate}
+.wheel{transform-box:fill-box;transform-origin:center;animation:spin .5s linear infinite}
+.beam{opacity:.0;animation:beam 5s ease-in-out infinite}
+.gate-in{padding:22px 24px 26px;text-align:center}
+.gate-in h1{margin:0 0 4px;font-size:24px;font-weight:800}
+.gate-in p{margin:0 0 16px;color:var(--mut)}
+.who{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px;animation:rise .5s .1s both}
+.who img{width:44px;height:44px;border-radius:50%}
+.who b{display:block}.who small{color:var(--mut);word-break:break-all}
+.role{display:inline-block;font-size:12px;font-weight:700;padding:1px 10px;border-radius:99px;margin-top:2px}
+.role.admin{background:var(--amber);color:#2a1c00}.role.user{background:var(--done);color:var(--mut)}
+.dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+.note{font-size:13px;color:var(--mut);margin-top:12px}
+.lf{text-align:left}
+.link{background:none;border:0;color:var(--pri);cursor:pointer;text-decoration:underline;padding:0;font-size:13px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.kind{display:inline-block;font-size:11px;font-weight:700;padding:0 8px;border-radius:6px;margin-right:6px;background:var(--done);color:var(--mut)}
+
+/* ===== ສ່ວນຫົວ ແລະ ແທັບ ===== */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 18px;margin-bottom:10px;border-radius:14px;background:var(--nav);color:#fff;animation:rise .5s both}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand .co{border-left:1px solid rgba(255,255,255,.28);padding-left:14px;line-height:1.35}
+.brand .co b{display:block;font-size:17px;font-weight:800}
+.brand .co span{font-size:13px;color:#b9c8e0}
+.sysname{margin:0 0 10px;font-size:14px;color:var(--mut)}
+.sysname b{color:var(--ink);font-size:16px}
+.me small{color:#b9c8e0}
+.me .sm{color:#fff;border-color:rgba(255,255,255,.35)}.me .sm:hover{background:rgba(255,255,255,.14)}
+.logo{flex:none;animation:pop .6s both}
+.logo img{display:block;height:48px;width:auto}
+.glogo{display:block;height:60px;width:auto;margin:0 auto 10px;animation:pop .8s .2s both}
+.me{display:flex;align-items:center;gap:8px;font-size:13px}
+.me img{width:32px;height:32px;border-radius:50%}
+.strip{height:6px;border-radius:3px;background:var(--road);position:relative;overflow:hidden;margin-bottom:12px}
+.strip i{position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,var(--amber),transparent);animation:sweep 3.2s ease-in-out infinite}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;position:relative;margin-bottom:14px}
+.tabs button{border:0;background:transparent;padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:500;color:var(--mut);transition:background .2s,color .2s,transform .15s}
+.tabs button:hover{background:var(--done);transform:translateY(-1px)}
+.tabs button.on{background:var(--pri);color:var(--pri-ink);font-weight:700}
+.badge{background:var(--amber);color:#2a1c00;border-radius:99px;font-size:12px;font-weight:800;padding:0 7px;margin-left:6px;animation:pulse 1.6s infinite}
+
+/* ===== ຄອມໂພເນັນ ===== */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;animation:rise .45s both}
+.panel h2{margin:0 0 6px;font-size:18px}
+.sub{color:var(--mut);margin:0 0 6px;font-size:14px}
+label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 25%,transparent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.btn{border:0;border-radius:10px;padding:10px 20px;background:var(--pri);color:var(--pri-ink);font-weight:700;cursor:pointer;margin-top:16px;transition:transform .15s,box-shadow .2s;position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(14,107,123,.3)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.sm{border:1px solid var(--line);background:transparent;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer;margin:2px 4px 2px 0;transition:background .15s,transform .15s}
+.sm:hover{background:var(--done);transform:translateY(-1px)}
+.sm.go{border-color:var(--ok);color:var(--ok)}.sm.no{border-color:var(--bad);color:var(--bad)}.sm.arm{background:var(--bad);color:#fff;border-color:var(--bad)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chip{border:1px solid var(--line);background:transparent;padding:4px 14px;border-radius:99px;cursor:pointer;font-size:13px;transition:all .2s}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill{display:inline-block;padding:1px 12px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.pill.pending{background:var(--warnbg);color:var(--warn);animation:pulse 2s infinite}
+.pill.approved{background:var(--okbg);color:var(--ok)}
+.pill.rejected,.pill.cancelled{background:var(--badbg);color:var(--bad)}
+.item{display:grid;grid-template-columns:1fr auto;gap:8px 14px;padding:14px 0;border-bottom:1px solid var(--line);animation:rise .4s both}
+.item:last-child{border-bottom:0}
+.item .t{font-weight:700}.item .m{color:var(--mut);font-size:13px}
+@media(max-width:560px){.item{grid-template-columns:1fr}}
+.empty{text-align:center;color:var(--mut);padding:26px 8px}
+.empty svg{display:block;margin:0 auto 6px;animation:bob 1s ease-in-out infinite alternate}
+.msg{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:14px;animation:rise .3s both}
+.msg.err{background:var(--badbg);color:var(--bad)}.msg.ok{background:var(--okbg);color:var(--ok)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ===== ຕາຕະລາງລົດ ===== */
+.row{margin:14px 0}
+.row .h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;font-weight:700}
+.bar{position:relative;height:30px;border-radius:8px;background:repeating-linear-gradient(90deg,var(--done) 0 calc(100%/24 - 1px),var(--bg) calc(100%/24 - 1px) calc(100%/24))}
+.blk{position:absolute;top:3px;bottom:3px;border-radius:6px;transform-origin:left;animation:grow .8s cubic-bezier(.2,.8,.2,1) both;overflow:hidden;font-size:11px;padding:0 6px;line-height:24px;white-space:nowrap;color:#fff}
+.blk.approved{background:var(--ok)}.blk.pending{background:var(--amber);color:#2a1c00}
+.hours{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:2px}
+.free{color:var(--ok);font-size:13px}
+.datepick{max-width:200px}
+
+/* ===== Toast + confetti ===== */
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:99px;opacity:0;transition:all .35s;z-index:20;max-width:90vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.conf{position:fixed;top:40%;left:50%;width:9px;height:14px;border-radius:2px;z-index:30;pointer-events:none;animation:conf 1.4s cubic-bezier(.2,.7,.3,1) forwards}
+
+@keyframes slide{to{transform:translateX(-160px)}}
+@keyframes drive{0%{left:-120px}55%{left:calc(50% - 55px)}70%{left:calc(50% - 55px)}100%{left:calc(100% + 20px)}}
+@keyframes bob{to{transform:translateY(-2px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes beam{0%,45%{opacity:0}60%,70%{opacity:.9}100%{opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--amber) 30%,transparent)}}
+@keyframes sweep{to{left:110%}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+@keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<div id="gate">
+ <div class="gate-box">
+  <div class="scene" aria-hidden="true">
+   <svg viewBox="0 0 360 170" width="100%" height="100%" preserveAspectRatio="xMidYMax meet">
+    <rect x="0" y="144" width="360" height="26" fill="var(--road)"/>
+    <!-- ລົດ -->
+    <g transform="translate(14,98) scale(.95)">
+     <g class="cbob">
+      <path d="M8 34 L14 22 Q18 14 28 14 L62 14 Q72 14 78 22 L90 26 Q102 28 102 36 L102 38 L8 38 Z" fill="var(--pri)"/>
+      <path d="M22 22 L28 17 L44 17 L44 26 L20 26 Z M49 17 L62 17 L70 26 L49 26 Z" fill="#cfeef5"/>
+      <rect class="hl" x="96" y="30" width="6" height="5" rx="2" fill="#ffd36b"/>
+     </g>
+     <circle cx="30" cy="39" r="8" fill="#10181b"/><circle cx="30" cy="39" r="3" fill="#9ab"/>
+     <circle cx="80" cy="39" r="8" fill="#10181b"/><circle cx="80" cy="39" r="3" fill="#9ab"/>
+    </g>
+    <!-- ໝຸດຈອງຕົກລົງເທິງລົດ -->
+    <ellipse class="rip" cx="62" cy="116" rx="10" ry="3" fill="none" stroke="var(--amber)" stroke-width="2"/>
+    <g class="pin"><path d="M62 112 L55 100 A8 8 0 1 1 69 100 Z" fill="var(--amber)"/><circle cx="62" cy="96" r="3" fill="#fff"/></g>
+    <!-- ປະຕິທິນຢືນຢັນກາງ -->
+    <g class="cal" transform="translate(132,22)">
+     <rect width="52" height="46" rx="7" fill="var(--card)" stroke="var(--mut)" stroke-width="2"/>
+     <rect width="52" height="12" rx="7" fill="var(--amber)"/><rect y="6" width="52" height="6" fill="var(--amber)"/>
+     <path class="tick" d="M14 29 L23 38 L39 21" fill="none" stroke="var(--ok)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <!-- ຫ້ອງປະຊຸມ -->
+    <g transform="translate(204,30)">
+     <rect width="142" height="114" rx="8" fill="var(--card)" stroke="var(--mut)" stroke-width="2" opacity=".92"/>
+     <rect x="12" y="12" width="66" height="40" rx="4" fill="var(--pri)"/>
+     <rect class="b1" x="20" y="38" width="9" height="8" rx="1.5" fill="#fff"/>
+     <rect class="b2" x="35" y="30" width="9" height="16" rx="1.5" fill="#fff"/>
+     <rect class="b3" x="50" y="22" width="9" height="24" rx="1.5" fill="#fff"/>
+     <rect class="b4" x="65" y="26" width="7" height="20" rx="1.5" fill="var(--amber)"/>
+     <circle cx="112" cy="26" r="14" fill="none" stroke="var(--mut)" stroke-width="2.5"/>
+     <line class="hand" x1="112" y1="26" x2="112" y2="16" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+     <line x1="112" y1="26" x2="119" y2="26" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+     <g class="pp p1"><circle cx="32" cy="72" r="7" fill="var(--amber)"/><path d="M21 90 Q32 76 43 90 Z" fill="var(--amber)"/></g>
+     <g class="pp p2"><circle cx="58" cy="72" r="7" fill="var(--pri)"/><path d="M47 90 Q58 76 69 90 Z" fill="var(--pri)"/></g>
+     <g class="pp p3"><circle cx="84" cy="72" r="7" fill="#6c5ce7"/><path d="M73 90 Q84 76 95 90 Z" fill="#6c5ce7"/></g>
+     <g class="pp p4"><circle cx="110" cy="72" r="7" fill="var(--ok)"/><path d="M99 90 Q110 76 121 90 Z" fill="var(--ok)"/></g>
+     <rect x="14" y="90" width="114" height="10" rx="5" fill="var(--ink)" opacity=".85"/>
+     <rect x="30" y="100" width="4" height="10" fill="var(--ink)" opacity=".7"/><rect x="108" y="100" width="4" height="10" fill="var(--ink)" opacity=".7"/>
+    </g>
+   </svg>
+  </div>
+  <div class="gate-in">
+   <img class="glogo" alt="Vari" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPQAAABvCAYAAADbju1+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACCOSURBVHhe7V1/qB3lmd7/l0qLij6pbFGsWCJd2aJoiShWKhZdUqoola4oCYmkKBuJRBJJMJKQEENCRIOSYMSgq5eN95w5c37M75ncm9wzP26S7rbYUClYqSxLRSmlYuku7zvnXu/9Zs78OGfOuSfme+AhkHvON+/MnHfm+97vfZ/3H/5hQgDVW4V2eK/4/xISEhchYMwdhhk9Jf6/hITERQa0gzXQg09ghAfEv0lISFxEQG3uMpjRSRjBlzD9afHvEhISFxGghw9DD/4HRvh/0IMPoJ3/R/EzEhISFwFQ714NLdCgh1+wQ5vRX6GGq8TPSUhIXASAHmxcfDsvsBP+SPychITEhAN2uAqGr8MI/rbMoc35HeJnJSQkJhwwww0wwo+XOTPT18XPSkhITDAwe/4qGGFtce28nJ9CO3+V+B0JCYkJBYzg5zDDD1Ocmfh3GNHPxO9ISEhMIGB734AevgU9+DLFmWOa0Zvi9yQkJCYQ0M/+GEZwLuHES6kFn2DqN98QvyshITFhgNndDz34POHEy97Qwd/QkdNuCYmJBsz51TBDHXrw94QTi5RpoBISkw1o4Qbo0R8SzptGLforzvz31eIYEhISEwAuwjCC12H4yxNJsmjObxPHkZCQmABA938IM5xNOG0WteAjcRwJCYkJAIxwE4zwTwmnzaMZPCSOJSEhsYJA8OvLYQavJpy1CLXwtDiehITECgKd8DZovp1w1iI0w7/B6t4pjikhIbFCgB08BiP834SzFmG8xdUWx5SQkFgBoBl9E1q4F3qQdNai1KPPYQX3i2NLSEiMGej4N0ELGgknLUOadhthG93z3xLHl5CQGCNgRvdB61tZVZw6T9nXi+NLSEiMEdDnn4Qe9q+sKkp6S5uRDWv+u+IxJCQkxgAWAWyHhxPOOSi14FMY3V3QdKkMKiExbsCIvgcz0BKOOSgp4q0HZ2XLHAmJFQC06Hbo4UcJxxyGLFsUHEd77lrxeBISEiME9PCnfXTDhuXH0MOnxeNJSEiMCNQBA1r47ynOODxJAEEP52DN3yMeV0LiUgTne1hnLhf/vzLADa6AUWFALMHgC9IeQ0tGvSUuHfCLkioXudjJPwwjmoLetaD50xSzEj9fGaDNXQMjmE46YoXUg09hhVvo6SQeX0Li6wQ4Z6+F7m+BEXgwg9/CoG6t0ee8pKVt4Y4/WskuqOH10LpBwgmr5++hBWvF40tIfF0ALVwPPezCiD7l5aboA2Z4VPxO5eCUTyNc3rdqJPQp4WQW1rl/EW2QkLiYweviTrgPZvhxL/05+funrVzTv1X8buWgg5SSGxqGNOUwoxOwou+IdkhITArQOXcD6+rZ0c/Q7t4s/l0E9HAnjOB/c0Q1/yx+bySgLpLQ/CxDqiWnlwa7oHmygENiYgG9e6gnY/0ZjOgTaP4x6PM/THzOnF8LM/xVjjPTdPtD8bsjAS3SEwcfNUkp1IjWibZISEwK0Jq/koO5C79ZehFxS+XuHthxc4m45HjuSOp6eZG9v+nhnHiMkQBGl0QNUgwZOT+FduYnoj0SEpMC6H4t5Xf7GbTwAP/dDO+AniWoGXwOPeglbEUnxPFHAujRxqQhY6Ie/nEsgQIJiQEAo/sajJSptB5cgBU+DCN4DKaf0mq5R63768UKRit4Uhx/JIARbU4YMk7qwe9ghNeLdklIrDRgBNt5baxFQlkxFR/5R6EFz8MI/pr4Tcf8Pe9D03Rc87+EO/ttcfyRAHr0TIox46UWdeF+cIVom4TESoJEL3vr4z8mdoKoVVQnfCfx/0zq2Bq8ByP4c++z1ew/o9a8TPw/ERPh0EQ9rEnpIolJA5cB0zpYC4Nle8y0dtaiRmLfWeOMsGPQg4/iv/kX4J4d/u2MuncDas42THmZ7V5XfMq9jMFr0KRTS0wOYM5R4OtjGAGth3/FtQn0W6XuMh16C9OOzYIGQPhp7Myhx29nPfoA7bNrxDFLA6p3GxrOQdTsQ3lvaZjRL5OOtUKML8rOhW0BCYlJAPTg/jia7aswwi4r8uiRBj08yHvUevAldP8CzPAIf0YPfs9imVZ4mzhWaaDh3I2G8yrq9ruoOS9S1Yf4maWAGT6ecKwVpf8F2sFG0U4JiZUEzLnV0MMXYYb7+C1sBC9BD7fBDOeghwa0+b0wwzd56UjLWO38VeIYpQHFvmfRmRvue1C8bTiRrevFmS4Jp1phknKoNid7ZUlMHKAFN7LCj929AZ3ovrg88tzPYMxv4m2sqnZsUHfvhGIfZkdeoGI+K35OBGz/rsVslkmiGV6Aff520V4JiUkC6wlUEfRaCtTtW1B39qBhf+XMxJa7RfysCNjhD2D4f0k41GSwTfXaos15oDU42jN384xlGDadkRWi49T8ldDmbofpPwgjWAfN35BJM9wAKxhZpRps7xtoz34bLW81WvYtaHhr0LLu4iVczbkbqnMHFPdW1LzVqNnX0OfFMSYZfH4nze+gbt+MhrUGDefHqFn3Q3H+ldn07oPq/kj8XhrYibXunehE/xbfn2AtWmeqEfCAal2Pafs5NOwTy5yZ6W0VPy+CFT/1CgT2R0HaLtCj/aLNeSD54N4D7jWoQ7DhPIOmWakoQ3y9g2eg+29zpJQioRRFNYNsGuEFGPM/F8cbBtDsa3hmpzqPoun+kpdoivUiVPsAFO9lKM4RqM6R3r8vQ3UPoOHuhupsg+o9jbrzKKatNYM8dMcFfkA13LVoeE9B8XZANfdB9V7m+6t4x9HoUXWPYdo5mL9E7d4XF2rQtpX/IQyfdPP+C3pYhx5uGeptjSnvW2i4j6HhvJV0Zvc91N3nc4Ni7blrYVCYPcWhJoH0Y9eC0j9k1J2nEzOWslSc42ialZV6Qo+egEmRUv8TmGkJCRmkfVDj7N3imGVBDyh2woa1EdPmC+yoDefEYtylKPnz3ome4+9EzVrHuys5uyrjAhruv0B1NkGx96FuH4NS4LeguMeytORjMU3al+4nqBl8Ai08Au38YA84KDQlcl9NGLZIb0+WgQSY/301jPCNpHGTQhYatGHOrxZtzwJOurdCSZu1lCD9CBRvaIFDXgIY0XYYLElTzpGJ3ECw+zragz/9cWruMp5mNuzn2Ilr9tuJ8x2GCj0U3ENoOFv5OG9XO7MpCrSaV2LaXo+6c7D0/c9waKjhKpjBfOLeJPkZB8rKLkl4PaCY2zKfPHX7lbyBcerCZXFOasKwCWJEdalc4VIUPO1uuDRtLvfmSdDbnDcNywOs8FkY4Uel38qLDD6D6f9SHLcoUJ+5hafTvARx30meY5X03uXjKM42dLzh92FLAKrzfaj2bqhu+ow1j1kOrYcPJ7LC+pF6rNvhKnGMTPBCvt9Ue5HOCUwpuZlXMPxHoI9R5KAsOeEk+gCdqJTAGlR3PZriNSlJxTkKqzOw7Cq114UZnk3P+S3MLsywUMBmKegtyVNr1aN18IgdWaT3LhQ+7gb8h321aFvVwLR3G6atl4daZmU5tBnuSLkv6dS7JIhwnThGX0DzruPghGiQSHp7N2dz14CchG5w4CVp3KSQ1i2m/w5OFV+foGasjt8YKdemMGnaPTtQiSda3pWcwL9YEzsAabpNiQyz5RIV8D69rby9vM5NnNMYWXfe4kBUwxhdhL5t38yBu6zZahFmObQV7Ercm37UA5p2F9+PRsO9v/APVXETsikiaH0Kw9cThk0a9eCP1CVTtD8LaNivJK5JWarOBnHcIoAZPAQ9+m3iPMqQ8oONaLM4dhZ62zFHh/6BV0Wyo2YfheJULmjBjRYpJlA2qJfGlXBoTHmroDovJozpR8V9RBxDBKWpwaC81BTjJolcyubXSKlUPId+4C2ZYW82/WByYhFp4FzfYd7OxLjKp/B0G3X78fyl2AqR1raK82+izcMANZNiA8ljDcIVcWjaGiizHlKcbeIYaYAZPVFJf+hRkxLjteIBItTmrh16Hc0/GOtGcews0BoKereesL8MKXZAU/aCZaVouBtRHzAgNDbaJzA92IxHBCWCQLXfTB5jQI7boXsJE5sShmSx7ryB89l70QQYwd1cIiYaN3kkBYnpMttYqNkvJa5LaXql9sJhhA/ACM+l2F+CJNg+X+yBXLcem3xn7lF13iF7xXMoC050qXJZMXaHrtu0XjiaMCSPLS/3xw/t/HUw/BMJ4yaTf4IWPiqeQz9AcR8cevuq7u0Rx80CV+LEMrCi7cVJ9bean7sPjhrFVCZ0mt2PNGtqz94vnktRxDkYFZ/z2B2a65xTDMmjeuphcaw0wOD90mG2V8ZHM3q1qE4TbG8VauZwDt10pqCdLhRpZgnYYZN1WOc5qKM2l5l5xdFsCoCJ9l4MVNx3irxs0oCas6OCPfVXUPN2oGlv5i3Odn8/GY1D055e0qgCdAq9XbgcTA9+lTBwEkl2WtGd4jn0A1R7b/K6lGTHu08cNw1cdDFsOq1JGUfdXeLYS0HOjpq5t7Jpp+JMoeG9AvXUFlpiUFQajZkfx4ULzsNxOq13EHVrKvHdQamar/V7K/YDF4dQ8oo4ViHSrof9UNm98RE5tLW8PLIo6e1Ss3P3b7naRg/fTBg4kYzoDVZYrB9174HEdSnLogFGjUUjhtvXJ6nYnOg2Gta6ofaZKfofv+UOscOqXqHsJkyfuRwqXU9vPwdoh91FaNhPicfIAj9olLLBMOddKifGyfy8jDRU7tB4//RVUIZ4MqpOoTUnl4NxC8wUQyeO0etFE03gWldgusTuQBrrzjt5LXE5b5sal+W1RskipYjqXTvrzQXV+wFPGUUbC9M+gbqzH2333kG25BaAlncXVHcfVHfw3HDKK6+Z/yyO3Q9cBVcvON3mfHxyfvspyscWxyqK6h265f4wYWwZ1rwjRW5cL8mklt3eY0JIJWwlaoTRdLYnrktZtqy7xHGXAlr4fRjhcNtVnLsePS+OvQCu7eXc7ILJRSJV+xhvcbWNQjGIPMTBWvdx1IZIZlGcneK4/YCaeyh3VsB/p4IRaz8a3kPDik9W79BN95GE0WU57fxYHDcNcb0u9fFJMXaSqFMZYva0dClw0iRVl+R1KUM1WwUGHf9fYYTUPCBpb1FyffTZvummvP9ac44kbMsjnXud3+prs97+g4AfMpTBSOWUg+z7c22yk1seyvX/lOYpfn8peSnhHUH71PPQgs2UXUiCEuJYZVC9Q9M0QzS8LGvWgUJv6dbcahihWri6ZOX4N+hnfyra3w9cP0778uJ1KcOadzyrNBC6vwUaCa0nbC1Gmhl1fEMcdwFczxyXKGa/oUTSj5yKJWruwFtFRQDVvZcz68o+OHkt723P+32iOXN7ZlSfp9juPrROb4PhH+f65ZJFPWmo3qFrFURpic2CkVp9/umeUkbS4Ekhtykpvh9NwDRFalOuSxk27VStM84OG3ovnyRhw77SUbx1yXXHKXZlkh5k3s/zBC+qAKatB1FzXk/akEMq963P3CKOtxSo2w/Eb/O077vvQPV2oOPvhOaf5go3VuQsV9iShuodWqXa3pSTKEvVPkxVQOL4IljJRI9OsuawaPCkkBzaLOvQ1m2l3x4ia3ZqsQRto0EfMtuOUlvdoG+aKRruOq5gEm3KIu33kkxVwX30YYHpzuVQ+cFZzk6K2NecJ8TxloJz8xU3GeFWKLDmPQuzux9G9Ife74Py6N8QxxgEI3Boq1hUL4/0Y1bdx8Xx08ACdrR9Iho8MaQa43LTKS5pHCo6TA7tHE0TPUDbfwJ6NFwxhu7b4rgL4P1X1dmRsCePZG/dvlkcb5TghBdq9pAXvFpKXhY4O7NeOHG+uvBAqzvvou49zd0i6YH41fX8jBo3iGMMguodeti3ylLSlEV1vi8eQwSrmVAne1LMEI2eCAafoR3eK9qdh8ETdBauH9+LZdH1XsXa4aSNJan3bzvKOx00wxLtySLb6j0jjjUOcPZVWfUQOr+63XfazUsmygVf/A4F+rynoJ15rSf/s/Ra/g91hhHHGATVO7R44sOy7uzKCu4sgDsGsDrlJFZiBb+BHaWuZ7PA69DmsA9Ib5njwT53EyuLJGwsQT34MyX3LB13KTj5o2z+Mq0rx/x2XgBLApWdDfHLxu4b6MQ0BYeXaoU5W6H5h6GFf0peT+o/HmVO4Yuieoeu8g1NpBtdsDY11lOawACZHr6de+FSwPK1ikWStMnrUpR15/VlY1r+Txbbhw7MoL50TBFQvXKVdkzvoDjOOMFT6DI51/Hbt28rpOVJJd5B6HPb2HET17Ln0EZU6Deeh+odephMnL4kMTczX9GE9hiN7h7oLNaXPIGVoB79FVo4UF0t50ArzhPJ61GC9IDtCfHzeEYFQot62L84gJI3eLsqxZYsKtlBplGDI+tla5ZV71lKLxXHIiw6NGXtdU6vg+l/0Dcrb6IdOm8zfRCyNIyzlzTKxOOJiNeIUa2/JvGYSdsR7bnS6+cFkDQT6gNmWi1QdX/BY2nnr+EuH6KNZUj9vDLSStFyvou6+ULChjy28iWoRgna4kOj5BYWvdVPpuuhLzo0NQbQfC1zF2aiHbrm7kuceCW0T0B1t2RFFhfAaaFa8JsVTwslnS0t2IrmqZ+h4f2TaGcRQPGuQ80e8prah3isjn8TDH+4wKEVHBdtXApu4cJie6INORzTVlU/0P0p/zLy9vRrQ8QOTdlo2pkXoC+LaCc50Q5dRaZYf74F1V5PYuzicUVA9+9a0bRQTiYJTqDlbeK9zppzrWhjEXDW2LDTbo5D6NfF8k19pn1Fqc1nChnw/nndO5iwIYuq8444zrgR551Td44U+/qRi0bSA3nxy2dmPQyqRsuRRp5sh7Z/njjxSukcR916tEiOL8zoQWhDqnEMSj3qQpvbDMXZyzd3iAIDbsRWRp9NZJxm+AjM+WMJO8tQDz8WbROBtreG30yiDVlsem+K46wEoLrlttoo2KW4qbnsLLVk+IcLqcFMtENrtBYRT7xKcnXKW/zgsH+TmU9L4G6Imj/u9fRH0ILtva2L9zDtbSqyVOgHEv7j0r/EtSjIuAhgL7RgT4qtxamFh0XbRHA3yLJvuoaXOY0fF+LqqBK559TGRrVSu26gfWYN9PBCoRnRRDs06Q+zokTKBaiUzgk0rMdoSiraIAL6/BboOdOeqkjTfC3cC8XbAMXqRfzp4ZOdzJ8FaN630D61MXkNSpCE+ajziGhvGep+buAqduiSb7q69ZY4zkqgdDIMvaGbM6n5BbCowXrKnnMaJ9mhCWh41eRz59J5l9en9XyZFm6hqXdH7dR/ghHsiktIlyp0FCsHzQLL61AecOIaFCRlQrVnHofu/z7F7nzq4YeiTWmAYtzKqZTi8bPYdKbEccaNuEOqk9FQMYW0hu7TIAJGMM0FLOJ1TOPEO3TTeypx8qNi3C50D1pGrogbPzVHVmoZfQI92sjKnVRksGAfqVD0mZaVQZzNRL2kU65BEZJNJJwQJ7mk2J/LvaJNaRjYTmOwXYCqwEHD8rXbu9Ga/SGCXyf2omH4auZW1VJOvkO7d6ac/GjZdDgVL6/sjno4F77QRUldIzpzd3A0mnTRltpFa98BFSOXgiuDymqdL6P9LpreERjB5oT9RWidK6S40ivs35k8fg7rbmEhxVEANecObqYu2pVF1dkJjfutJR5GXy+HVr1VpXN5q6Jyihpn902aJ8Dy72FxvCIBizTG+9tfQPM/pKR6tM58t2/bn6a3meR5RRsGASt4lC71W0KSd+p0n4RZMpNOD34l2tIPcIMroNhbEsfO47SzSRxrnOByz7JChs1TL7BDW1EiueTr5dC0pxfXmSYvwjhI2tb0lqjbt6DWTN2zhn3mBzCimUIZZezAwRcsWauRMKGvw/Q3YMq7jjWqFoNfAuO0y1Jlk1mIp7Ne+ensV/a8idap50pnixXsirEAapo3QE7/a+I440K8B80vguIRbl7C2C9w55Gvu0MTWIJlWfnYCpGmvMrMg6gbN3CN8ZJoM5yz13Ipoe5f4KKOpaStJz38HetqUxWXGb7BGmY0tabkicbMU3GkPeWYi7Rf66caMghwOvomq0KWd5YFe95DY+YlWg9DDwvOTrp/gRGlZkP1A88k6izwl2JDP3rvrtS0uzfdLhfIVbyjaM++AKO76dJw6Lh9Zvki91FRYTnYXWi4j6FOInzWTZS9BW3mRnS6D8CYWwc92MhkieDuY9Dm1vJ+Ir3pSWOZ1rAkXlf4SW4/V6TvdRmwtE2shplyvEI8hHZ3a+GEG9PXRRvygPbMzWg4+1OO3Z+8V25VUuRfBhRzgeI9W1hud4GqfQCtOWqufvCScGgCb7WUXZeMg7F06nHWPyOZWcX9JRe5N70nOLDV8p6MU1i9XZz1NMh2EWk4K9aD4jUZFmjM3AjVSl+vF6HqHUVz9nno/mziBouMtdDWizbkAdaZy7niquxMgpYE7XxFzSoBxb6ndHcLUgtVvRehdfdw181Lx6Fnv4OG+3ziglwKVG1ak6Xm+Q4DkhTiafegWtdcdO/tgh68nrjBIjleUOKGLwGaM7QXny6S14+courspS0kcbxRgCvDFApmlnzwkJBhe2Y77zWb/qXj0ATS2B5yingRkivD1pOUrXg9qkDcw6nkW2W5fbvR6e6G7udMu6MTmBosww3N09+DMkCVGOlwUR7D+/pIq694J4ZKG8tKDxEpo0zz/x0GxVsuNYfmCzezeSBR84uW3kGSDxKvRVVA27l2qGk35VqrMzthBBl9oSmyX07YUATJHw3UC5rkfer246Nyaky1V/HSqnTgrheLUbyd0MIDsZrrJebQBNIw5jQ58eJ8HRn/gDcOk7tdBL1od/m1/YKNsUO/l7jJX93sC2ifHajkcwEkUDiYNjc7zjEulW1oiaSNYcCB0IZNMZLBGhlQDIIUSDT/A75Ol6JDEyhAdGlMvZ39VWSG5YHbp1KiSOL4BRh3p9iBTveVvj86LXw5S5mkKFA3nxw8MEpO52zNSxQqCkx7t1FnTqgpetlFSIKNLWcb9GD3Yn/yS9ah39evitcsE7A3PSpypwTvIfHcR4FeNt7gSSY0Y2rN0X70h4kbzdPt8rLDaeD9/7K610vJU1wux1zXTx0kD/SAjd/2VB5ZcntqOd9AhzTgw68KXC5VhyZwni9FWL+O62kSIOBOi9YV4nmPCrwvPui0m7aImjPboUdayo0+S0k34vEGBVru2r5tYYqSBPwoGEViEZQTQOm2GSIXpD9HVW5ouVt6wgXl1/IiW6cehR6+tUza6lJ2aALqMzfz22HQJ/akUnWOoO7dIJ7vKAHFuqv0Huoym09tgeafgCnktJvz+6qYbi+AHC/e11+qUz0onRO8dKNGc9TUsE6zFGsrO27D2Mo59Yp9ACqrprw+5Bv5K9acHdBCKj9dvjNwqTs0gQXkWdj8a+LU9HZWZ+4Qz3PUoNkAmu5LCXuKkiLlJP6uR7TfvHCTv4R5rnDr26KINcbtA6WTTfLI41GLGZohkXZaxeMTp91X0Jm5I3V5Ih06BrdLoS5+F7tTUyFIw10rnt+4wFluA0+7vWNQT1O0e27JjT5d2U0WQDXrPKO4qGZn3nHUZm7nzLq06jzp0F+BtzUo4HFR3eAlJGdWnb6i8+MANSAYOMmEGwJ6m6D7tcWbbEW7SPJIPE5ViAtbhlxPj4sKFd94a6B3671AYdIppEMvB6Yp/W4EU7FRk9qmqPYD4vmMG7TWjSV/Br1+1lZ0um/EpaHhF+h0K59ui+All2INtnU0LqrOW1T9BcN/L9MxpUMnQe1EuK3IxbKlRfuYFZZFDgu07CcHnnarpw5D6+6CHn2Aju/BPjeWwB4L8tcGTO4YNevmMTSsNdCpA0uOU0qH7g/ejqAno3iBJ4k0m3g7vf3JSoGXLmXbuCxQdabQOv0kNN/ieu9afhODqoDaHAXKSiptjprUJMBbwzXw/abZSykdOhvcLLxhPj9x62rFo38fE+2dFHA538CtZ+0nYfospSSOOw6g5T3dCy6m2DYmKtYUy0Vpwdqe4EW+MxMrceigOofWg6cS4/fjOBx6AVBmbx04D7hKcuDLe5HE7kUbJwnxVuCAU1jV3k1JP+KY40Rs/4DBvaFJyjLunTC7V0MrKI6/wGEdmo6lB+fQmq/kYcq16KavJo6TxnE69AJ6yRMvxf2ZBn0DlSRnsnESxG5o6ULqkwg0SD65ZPIGR7rd9aQqKo43buCN5mWxWB93RknaWhlJHYUSTugBeGod3v+qUR464Y9g+MUFJIdx6Lha6yMSGhS/Pyiguvey/JfhUwfWvOOP36EXwALuqr0FqncEivsmJxFUNS2nceiBobpUDPAq6s7T/ZqQTTJ6GVnbCwfI+CFp7aCdBnGslQQLY9S4Qd8hvtcDizksPVf6rbC4A22ZUU7347S8E49NQDtYAy04CzP8S8IJRA7i0KTnFmecdWGf/4H43WHA8RRumzR7f0877iMY4V9SlxAr6dALYK2ymntvrCrq7OF9bBJso6c6N9jOc/Ke89Ln6XuUQkgqGVSOqLo/Wum2psMidmqX2ua82nfXgP6fzr1JPYyNsUS1BwGmvCtZIINbs9oHYiF8541C95kryty3exVbr/JvJdaEu7PIbISn30b3IIzg19wWuN8bu4xDxwqzH6MTzcMIto8qAIkWBZe9F/mh2Dr9KG9Lav652LkpKzD4DHr0OTUfHLZEtlKwCmbNWM26UIr7C55y1t3noHokTvgCms4uzu3l/F5nZyxaaD8X1xK7j0Dx7sF/WjdmJflfrOgl7WzAtPkC9+xuevvR9F7i9XLDeoYLF6wzuT/sSQG1O4r3r90H4/tHWnAs6L+blVFIH44f8NaLsRgk3Wd3I2ru/Sx//PZg6jGwz90ELXgeetTghgpm8Ft2BIpMc3Q6eA3u2URnUWhzR7jIJRaRmIMeGjCC12GGj9NLSfx81YA2dw0a7v2ouev4mnVO3wf9zC+g+c9CD/ehExxCO9hDOuridycO/JaiThMk20vkJ/3F8+OtEphSvgV19np0ujcw1WpE/ycB3I/qpPFtnqIbs9fjpPkd/Id9dZWFJUuBdvdm6OFPYXTX864ARZTN7n1pb1oY0T9zj3Kavptzq0dlUxGwP9DuUce7Ae25azFFKkIrZ4+EhISEhITEsPh/TLXLTWfgS/8AAAAASUVORK5CYII=">
+   <h1>Vari Fleet &amp; Meeting</h1>
+   <p>ລະບົບຈອງນຳໃຊ້ລົດຫ້ອງການ ແລະ ຫ້ອງປະຊຸມ</p>
+   <div id="gateBody"><span class="dots">ກຳລັງກວດສອບຕົວຕົນ</span></div>
+  </div>
+ </div>
+</div>
+
+<div id="app" hidden>
+ <div class="wrap">
+  <div class="top">
+   <div class="brand">
+    <div class="logo"><img alt="Vari" src="data:image/png;base64,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"></div>
+    <div class="co"><b>ບໍລິສັດ ວາຣີ ຈຳກັດ</b><span>Vari Co., Ltd</span></div>
+   </div>
+   <div class="me" id="meBox"></div>
+  </div>
+  <p class="sysname"><b>Vari Fleet &amp; Meeting</b> · ລະບົບຈອງນຳໃຊ້ລົດຫ້ອງການ ແລະ ຫ້ອງປະຊຸມ</p>
+  <div class="strip"><i></i></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+ </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+/* ============================================================
+   LOCAL SHIM — ໃຊ້ສຳລັບ localhost ເທົ່ານັ້ນ
+   ແທນທີ່ window.claude (user + db) ດ້ວຍ localStorage
+   ຂໍ້ມູນເກັບຢູ່ໃນບຣາວເຊີເຄື່ອງນີ້ ບໍ່ໄດ້ແບ່ງປັນກັບຄົນອື່ນ
+   ============================================================ */
+(function(){
+ var KEY="vfm_local_db_v1", UKEY="vfm_local_uid_v1";
+ var PIX="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+ function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+ function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+ var L={};
+ function snap(col){var d=load()[col]||{};return{docs:Object.keys(d).map(function(id){return{id:id,data:function(){return d[id]}}})}}
+ function notify(col){(L[col]||[]).forEach(function(cb){try{cb(snap(col))}catch(e){}})}
+ function nid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+ function docRef(col,id){return{
+  get:function(){var d=(load()[col]||{})[id];return Promise.resolve({exists:!!d,data:function(){return d}})},
+  set:function(o){var a=load();(a[col]=a[col]||{})[id]=Object.assign({},o);save(a);notify(col);return Promise.resolve()},
+  update:function(o){var a=load();(a[col]=a[col]||{})[id]=Object.assign({},(a[col]||{})[id]||{},o);save(a);notify(col);return Promise.resolve()},
+  delete:function(){var a=load();if(a[col])delete a[col][id];save(a);notify(col);return Promise.resolve()}}}
+ function colRef(col){return{
+  doc:function(id){return docRef(col,id)},
+  add:function(o){var id=nid();return docRef(col,id).set(o).then(function(){return{id:id}})},
+  onSnapshot:function(cb,onErr){(L[col]=L[col]||[]).push(cb);
+   setTimeout(function(){try{cb(snap(col))}catch(e){onErr&&onErr(e)}},0);return function(){}}}}
+ var db={collection:colRef,doc:function(p){var i=p.lastIndexOf("/");return docRef(p.slice(0,i),p.slice(i+1))}};
+ var ME={id:"anon",name:"",email:null,avatarUrl:PIX,isOwner:false,canEdit:false};
+ var user={
+  me:function(){return Promise.resolve(ME)},
+  profiles:function(ids){var a=load()["accounts"]||{},o={};
+   Object.keys(a).forEach(function(k){var r=a[k];
+    if(!ids||ids.indexOf(r.uid)>=0)o[r.uid]={name:r.name||r.email,avatarUrl:PIX}});
+   return Promise.resolve(o)}};
+ window.__local={
+  newId:nid,
+  accounts:function(){return load()["accounts"]||{}},
+  setMe:function(o){for(var k in o)ME[k]=o[k];return ME}};
+ window.claude={use:function(w){return Promise.resolve(w==="user"?user:w==="db"?db:null)}};
+ window.addEventListener("storage",function(e){if(e.key===KEY)Object.keys(L).forEach(notify)});
+})();
+</script>
+<style>
+.pww{position:relative}
+.pww input{width:100%;padding-right:46px}
+.pww .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+ border:0;background:transparent;cursor:pointer;font-size:17px;line-height:1;
+ padding:6px 8px;border-radius:8px;opacity:.55}
+.pww .eye:hover{opacity:1;background:rgba(127,127,127,.15)}
+.pww .eye.on{opacity:1}
+</style>
+
+<script>
+const ADMIN_EMAILS=["sunthana896@gmail.com"];
+const ST={pending:"ລໍຖ້າອະນຸມັດ",approved:"ອະນຸມັດແລ້ວ",rejected:"ບໍ່ອະນຸມັດ",cancelled:"ຍົກເລີກແລ້ວ"};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const p2=n=>String(n).padStart(2,"0");
+const fmt=s=>{if(!s)return"";const[d,t]=s.split("T");const[y,m,dd]=d.split("-");return`${dd}/${m}/${y} ${t||""}`};
+const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
+
+let user=null,db=null,me={id:null,name:"",email:null,avatarUrl:"",isOwner:false,canEdit:false};
+let isAdmin=false,tab="car",filter="all",calDay=today(),calKind="car",myEmail="";
+let vehicles=[],rooms=[],bookings=[],rbookings=[],decisions={},profs={},armed=null,loginRef=null,fails=0,lockUntil=0;
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),2600)}
+function confetti(){
+ const cols=["#f2a516","#0e6b7b","#1b8a4b","#c2362b","#6c5ce7"];
+ for(let i=0;i<46;i++){const c=document.createElement("div");c.className="conf";
+  c.style.background=cols[i%5];c.style.setProperty("--x",(Math.random()*500-250)+"px");
+  c.style.setProperty("--y",(Math.random()*-260-40)+"px");c.style.setProperty("--r",(Math.random()*900-450)+"deg");
+  c.style.animationDelay=(Math.random()*.15)+"s";document.body.appendChild(c);setTimeout(()=>c.remove(),1700)}
+}
+const statusOf=b=>b.cancelled?"cancelled":(decisions[b.id]?decisions[b.id].status:"pending");
+const vOf=id=>vehicles.find(v=>v.id===id);
+const rOf=id=>rooms.find(v=>v.id===id);
+const nameOf=uid=>(profs[uid]&&profs[uid].name)||"ຜູ້ໃຊ້";
+const bookerOf=b=>(b&&b.booker&&String(b.booker).trim())||nameOf(b&&b.uid);
+function clash(vid,s,e,skip){return bookings.find(b=>b.id!==skip&&b.vehicleId===vid&&["pending","approved"].includes(statusOf(b))&&s<b.end&&e>b.start)}
+function rclash(rid,s,e,skip){return rbookings.find(b=>b.id!==skip&&b.roomId===rid&&!b.cancelled&&s<b.end&&e>b.start)}
+
+/* ===== ລະຫັດຜ່ານ (PBKDF2, ເກັບສ່ວນຕົວຂອງແຕ່ລະຄົນ) ===== */
+const enc=new TextEncoder();
+const b64=u=>btoa(String.fromCharCode(...u));
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function hashPw(pw,salt,iter){
+ const k=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveBits"]);
+ return b64(new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},k,256)));
+}
+
+/* ===== ໜ້າເຂົ້າສູ່ລະບົບ ===== */
+async function boot(){
+ const c=window.claude;
+ try{ if(c&&c.use){user=await c.use("user");db=await c.use("db")} }catch(e){}
+ if(user){try{me=await user.me()}catch(e){}}
+ isAdmin=!!(me.isOwner||me.canEdit);
+ const g=$("#gateBody");
+ if(!db||!me.id||!(window.crypto&&crypto.subtle)){
+  const why=[];
+  if(!(c&&c.use))why.push("ໜ້ານີ້ບໍ່ໄດ້ເປີດຜ່ານ claude.ai (ໃຫ້ເປີດຈາກລິ້ງ claude.ai/artifact/… ເທົ່ານັ້ນ ບໍ່ແມ່ນໄຟລ໌ໃນເຄື່ອງ)");
+  else{
+   if(!db)why.push("ຖານຂໍ້ມູນຮ່ວມກັນບໍ່ພ້ອມ ຫຼື ບັນຊີນີ້ບໍ່ມີສິດເຂົ້າ");
+   if(!me.id)why.push("ບໍ່ພົບຕົວຕົນຜູ້ໃຊ້ (ຍັງບໍ່ໄດ້ລັອກອິນ Claude ຫຼື ບໍ່ມີສິດ)");
+  }
+  if(!(window.crypto&&crypto.subtle))why.push("ບຣາວເຊີນີ້ບໍ່ຮອງຮັບການເຂົ້າລະຫັດລະຫັດຜ່ານ");
+  g.innerHTML=`<div class="msg err">ຍັງເຂົ້າລະບົບບໍ່ໄດ້. ກະລຸນາລັອກອິນບັນຊີ Claude ແລ້ວເປີດລິ້ງນີ້ອີກຄັ້ງ ຫຼື ຂໍສິດເຂົ້າໃຊ້ຈາກຜູ້ດູແລ.</div><div class="note" style="text-align:left"><b>ສາເຫດ:</b><br>${why.map(x=>"• "+esc(x)).join("<br>")}</div>`;return}
+ let seen="";try{seen=sessionStorage.getItem("cb2_in")||""}catch(e){}
+ if(seen){const a=acctGet(seen);if(a){applyAcct(a);enter();return}}
+ showLogin(acctCount()?"login":"register");
+}
+/* ===== ບັນຊີທ້ອງຖິ່ນ — ຮອງຮັບຫຼາຍບັນຊີ (ຜູ້ດູແລ / ພະນັກງານ) ===== */
+const acctKey=m=>"acct_"+m.trim().toLowerCase().replace(/[^a-z0-9]+/g,"_");
+const acctAll=()=>window.__local.accounts();
+const acctCount=()=>Object.keys(acctAll()).length;
+const acctGet=m=>acctAll()[acctKey(m)]||null;
+const acctRef=m=>db.collection("accounts").doc(acctKey(m));
+function applyAcct(a){
+ if(ADMIN_EMAILS.includes(a.email)&&a.role!=="admin"){a.role="admin";try{acctRef(a.email).set(a)}catch(e){}}
+ myEmail=a.email;isAdmin=a.role==="admin";
+ window.__local.setMe({id:a.uid,name:a.name||a.email,email:a.email,isOwner:isAdmin,canEdit:isAdmin});
+}
+function showLogin(mode){
+ const g=$("#gateBody"),reg=mode==="register",first=!acctCount();
+ g.innerHTML=`<div class="who"><div><b>${reg?"ສ້າງບັນຊີໃໝ່":"ເຂົ້າສູ່ລະບົບ"}</b><br>
+  <small>${reg?"ບັນຊີໃໝ່ຈະເປັນພະນັກງານ · ສິດຜູ້ດູແລໃຫ້ຜູ້ດູແລຕັ້ງໃຫ້ພາຍຫຼັງ":"ໃສ່ອີເມວ ແລະ ລະຫັດຜ່ານຂອງທ່ານ"}</small></div></div>
+ <form class="lf" id="lf" novalidate>
+ ${reg?`<label for="l_name">ຊື່ ແລະ ນາມສະກຸນ</label><input id="l_name" type="text" autocomplete="name">`:""}
+ <label for="l_mail">ອີເມວ</label><input id="l_mail" type="email" autocomplete="username">
+ <label for="l_pw">${reg?"ຕັ້ງລະຫັດຜ່ານ (ຢ່າງນ້ອຍ 8 ຕົວ)":"ລະຫັດຜ່ານ"}</label>
+ <div class="pww"><input id="l_pw" type="password" autocomplete="${reg?"new-password":"current-password"}"><button type="button" class="eye" data-for="l_pw" aria-label="ສະແດງ ຫຼື ເຊື່ອງລະຫັດຜ່ານ">👁</button></div>
+ ${reg?`<label for="l_pw2">ຢືນຢັນລະຫັດຜ່ານ</label><div class="pww"><input id="l_pw2" type="password" autocomplete="new-password"><button type="button" class="eye" data-for="l_pw2" aria-label="ສະແດງ ຫຼື ເຊື່ອງລະຫັດຜ່ານ">👁</button></div>`:""}
+ <button class="btn" id="enter" type="submit" style="width:100%">${reg?"ສ້າງບັນຊີ ແລະ ເຂົ້າສູ່ລະບົບ":"ເຂົ້າສູ່ລະບົບ"}</button><div id="lmsg"></div></form>
+ <div class="note"><button class="link" id="swap" type="button">${reg?"ມີບັນຊີແລ້ວ? ເຂົ້າສູ່ລະບົບ":"ຍັງບໍ່ມີບັນຊີ? ສ້າງບັນຊີໃໝ່"}</button></div>`;
+ $("#lf").onsubmit=ev=>{ev.preventDefault();doLogin(reg)};
+ $("#swap").onclick=()=>showLogin(reg?"login":"register");
+ g.querySelectorAll(".eye").forEach(b=>b.onclick=()=>{
+  const i=$("#"+b.dataset.for),show=i.type==="password";
+  i.type=show?"text":"password";b.textContent=show?"🙈":"👁";
+  b.classList.toggle("on",show);i.focus()});
+}
+async function doLogin(reg){
+ const m=$("#lmsg"),box=$(".gate-box");
+ const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`;box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake")};
+ if(Date.now()<lockUntil)return bad("ລອງຜິດຫຼາຍເກີນໄປ ກະລຸນາລໍຖ້າ "+Math.ceil((lockUntil-Date.now())/1000)+" ວິນາທີ");
+ const mail=$("#l_mail").value.trim().toLowerCase(),pw=$("#l_pw").value;
+ if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail))return bad("ຮູບແບບອີເມວບໍ່ຖືກຕ້ອງ");
+ if(reg){
+  const nm=$("#l_name").value.trim();
+  if(nm.length<2)return bad("ກະລຸນາໃສ່ຊື່ ແລະ ນາມສະກຸນ");
+  if(acctGet(mail))return bad("ອີເມວນີ້ມີບັນຊີຢູ່ແລ້ວ ກະລຸນາເຂົ້າສູ່ລະບົບ");
+  if(pw.length<8)return bad("ລະຫັດຜ່ານຕ້ອງມີຢ່າງນ້ອຍ 8 ຕົວ");
+  if(pw!==$("#l_pw2").value)return bad("ລະຫັດຜ່ານສອງຄັ້ງບໍ່ກົງກັນ");
+  const role=ADMIN_EMAILS.includes(mail)||(!ADMIN_EMAILS.length&&!acctCount())?"admin":"user";
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iter=150000;
+  const a={email:mail,name:nm,role,uid:"u-"+window.__local.newId(),salt:b64(salt),
+   hash:await hashPw(pw,salt,iter),iter,created:new Date().toISOString()};
+  try{await acctRef(mail).set(a)}catch(e){return bad("ບັນທຶກບັນຊີບໍ່ສຳເລັດ")}
+  applyAcct(a);confetti();return enter();
+ }
+ const rec=acctGet(mail);
+ const ok=rec&&(await hashPw(pw,unb64(rec.salt),rec.iter))===rec.hash;
+ if(!ok){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}return bad("ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ")}
+ fails=0;applyAcct(rec);confetti();enter();
+}
+function enter(){
+ try{sessionStorage.setItem("cb2_in",myEmail)}catch(e){}
+ $("#gate").hidden=true;$("#app").hidden=false;
+ const pendAdmin=!isAdmin&&ADMIN_EMAILS.includes(myEmail);
+ $("#meBox").innerHTML=`<img alt="" src="${esc(me.avatarUrl)}"><div><b>${esc(me.name||"ຜູ້ໃຊ້")}</b><br><small>${esc(myEmail)}</small> <span class="role ${isAdmin?"admin":"user"}">${isAdmin?"ຜູ້ດູແລ":"ພະນັກງານ"}</span></div>`;
+ if(pendAdmin)setTimeout(()=>toast("ອີເມວນີ້ເປັນຜູ້ດູແລ ແຕ່ບັນຊີ Claude ນີ້ຍັງບໍ່ມີສິດ Editor"),600);
+ const out=document.createElement("button");out.className="sm";out.textContent="ອອກຈາກລະບົບ";
+ out.onclick=()=>{try{sessionStorage.removeItem("cb2_in")}catch(e){}location.reload()};$("#meBox").appendChild(out);
+ subscribe();render();
+}
+function subscribe(){
+ const onErr=e=>toast("ເຊື່ອມຖານຂໍ້ມູນບໍ່ໄດ້: "+(e&&e.code||""));
+ const uids=()=>[...new Set([...bookings,...rbookings].map(b=>b.uid).filter(Boolean))];
+ const loadProfs=async()=>{try{const ids=uids();if(user&&ids.length)profs=await user.profiles(ids)}catch(e){}};
+ db.collection("vehicles").onSnapshot(s=>{vehicles=s.docs.map(d=>({id:d.id,...d.data()}));changed()},onErr);
+ db.collection("rooms").onSnapshot(s=>{rooms=s.docs.map(d=>({id:d.id,...d.data()}));changed()},onErr);
+ db.collection("decisions").onSnapshot(s=>{decisions={};s.docs.forEach(d=>decisions[d.id]=d.data());changed()},onErr);
+ db.collection("bookings").onSnapshot(async s=>{bookings=s.docs.map(d=>({id:d.id,...d.data()}));await loadProfs();changed()},onErr);
+ db.collection("roomBookings").onSnapshot(async s=>{rbookings=s.docs.map(d=>({id:d.id,...d.data()}));await loadProfs();changed()},onErr);
+}
+function changed(){
+ if(tab==="car")refreshSel("f_veh",vehicles,"noCar",vehOpt);
+ else if(tab==="room")refreshSel("r_room",rooms,"noRoom",roomOpt);
+ else render();
+ updateTabs();
+}
+function refreshSel(id,arr,warn,fn){const s=$("#"+id);if(!s)return;const cur=s.value;s.innerHTML=arr.filter(v=>v.active!==false).map(fn).join("");if(cur)s.value=cur;const n=$("#"+warn);if(n)n.hidden=arr.some(v=>v.active!==false)}
+
+/* ===== ແທັບ ===== */
+function updateTabs(){
+ const pend=bookings.filter(b=>statusOf(b)==="pending").length;
+ const list=[["car","ຈອງລົດ"],["room","ຈອງຫ້ອງປະຊຸມ"],["list","ລາຍການຈອງ"+(isAdmin&&pend?`<span class="badge">${pend}</span>`:"")],["cal","ຕາຕະລາງ"],["res","ຂໍ້ມູນລົດ ແລະ ຫ້ອງ"]];
+ $("#tabs").innerHTML=list.map(([k,n])=>`<button class="${k===tab?"on":""}" data-t="${k}">${n}</button>`).join("");
+ $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;armed=null;render()});
+}
+function render(){updateTabs();({car:vCar,room:vRoom,list:vList,cal:vCal,res:vRes})[tab]()}
+const ICO={
+ car:`<svg width="54" height="30" viewBox="0 0 110 50"><path d="M8 34 L14 22 Q18 14 28 14 L62 14 Q72 14 78 22 L90 26 Q102 28 102 36 L102 38 L8 38 Z" fill="currentColor" opacity=".35"/><circle cx="30" cy="40" r="8" fill="currentColor" opacity=".6"/><circle cx="80" cy="40" r="8" fill="currentColor" opacity=".6"/></svg>`,
+ room:`<svg width="56" height="42" viewBox="0 0 64 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"><rect x="6" y="4" width="52" height="24" rx="3"/><path d="M32 28v8M20 42h24"/><circle cx="19" cy="14" r="3" fill="currentColor"/><circle cx="32" cy="14" r="3" fill="currentColor"/><circle cx="45" cy="14" r="3" fill="currentColor"/><path d="M15 22h8M28 22h8M41 22h8"/></svg>`,
+ cal:`<svg width="48" height="44" viewBox="0 0 48 44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"><rect x="5" y="8" width="38" height="32" rx="4"/><path d="M5 18h38M15 4v8M33 4v8"/><circle cx="17" cy="28" r="2" fill="currentColor"/><circle cx="31" cy="28" r="2" fill="currentColor"/></svg>`};
+const emptyIco=(k,t)=>`<div class="empty">${ICO[k]}${t}</div>`;
+
+/* ===== ຈອງລົດ ===== */
+const vehOpt=v=>`<option value="${esc(v.id)}">${esc(v.plate)} · ${esc(v.name||"")} (${esc(v.seats||"?")} ບ່ອນນັ່ງ)</option>`;
+function vCar(){
+ const has=vehicles.some(v=>v.active!==false);
+ $("#view").innerHTML=`<div class="panel"><h2>ຈອງລົດຫ້ອງການ</h2><p class="sub">ສົ່ງແລ້ວຈະລໍຖ້າຜູ້ດູແລອະນຸມັດ · ແກ້ຊື່ຜູ້ຈອງໄດ້ ຖ້າຈອງແທນຄົນອື່ນ</p>
+ <div id="noCar" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີລົດໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມລົດທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
+ <label for="f_veh">ເລືອກລົດ</label><select id="f_veh">${vehicles.filter(v=>v.active!==false).map(vehOpt).join("")}</select>
+ <div class="grid2"><div><label for="f_s">ເລີ່ມໃຊ້</label><input id="f_s" type="datetime-local"></div><div><label for="f_e">ຄືນລົດ</label><input id="f_e" type="datetime-local"></div></div>
+ <div class="grid2"><div><label for="f_who">ຊື່ຜູ້ຈອງ</label><input id="f_who" value="${esc(me.name||"")}"></div><div><label for="f_dep">ພະແນກ</label><input id="f_dep"></div></div>
+ <div class="grid2"><div><label for="f_tel">ເບີໂທຕິດຕໍ່</label><input id="f_tel" inputmode="tel"></div><div><label for="f_pax">ຈຳນວນຜູ້ໂດຍສານ</label><input id="f_pax" type="number" min="1"></div></div>
+ <label for="f_dest">ປາຍທາງ</label><input id="f_dest">
+ <label for="f_pur">ຈຸດປະສົງ</label><textarea id="f_pur" rows="2"></textarea>
+ <button class="btn" id="send">ສົ່ງຄຳຂໍຈອງລົດ</button><div id="msg"></div></div>`;
+ $("#send").onclick=submitCar;
+}
+async function submitCar(){
+ const g=i=>$("#"+i).value.trim(),m=$("#msg");
+ const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`};
+ const b={uid:me.id,booker:g("f_who"),vehicleId:g("f_veh"),start:g("f_s"),end:g("f_e"),dep:g("f_dep"),tel:g("f_tel"),dest:g("f_dest"),pax:g("f_pax"),purpose:g("f_pur"),cancelled:false,created:new Date().toISOString()};
+ if(!b.booker)return bad("ກະລຸນາໃສ່ຊື່ຜູ້ຈອງ");
+ if(!b.vehicleId||!b.start||!b.end||!b.dest)return bad("ກະລຸນາເລືອກລົດ, ໃສ່ເວລາເລີ່ມ-ຄືນ ແລະ ປາຍທາງໃຫ້ຄົບ");
+ if(b.end<=b.start)return bad("ເວລາຄືນລົດຕ້ອງຢູ່ຫຼັງເວລາເລີ່ມໃຊ້");
+ const c=clash(b.vehicleId,b.start,b.end);
+ if(c)return bad(`ລົດຄັນນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
+ $("#send").disabled=true;
+ try{await db.collection("bookings").add(b);m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`;confetti();toast("ສົ່ງຄຳຂໍຈອງລົດສຳເລັດ");
+  ["f_s","f_e","f_dep","f_tel","f_dest","f_pax","f_pur"].forEach(i=>$("#"+i).value="");$("#f_who").value=me.name||""}
+ catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
+ $("#send").disabled=false;
+}
+
+/* ===== ຈອງຫ້ອງປະຊຸມ (ຢືນຢັນທັນທີ ຖ້າເວລາບໍ່ຊ້ອນ) ===== */
+const roomOpt=r=>`<option value="${esc(r.id)}">${esc(r.name)} (${esc(r.capacity||"?")} ຄົນ)</option>`;
+function vRoom(){
+ const has=rooms.some(r=>r.active!==false);
+ $("#view").innerHTML=`<div class="panel"><h2>ຈອງຫ້ອງປະຊຸມ</h2><p class="sub">ຈອງໄດ້ທັນທີ ຖ້າຫ້ອງວ່າງ (ບໍ່ຕ້ອງລໍຖ້າອະນຸມັດ) · ແກ້ຊື່ຜູ້ຈອງໄດ້ ຖ້າຈອງແທນຄົນອື່ນ</p>
+ <div id="noRoom" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີຫ້ອງປະຊຸມໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມຫ້ອງທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
+ <label for="r_room">ເລືອກຫ້ອງ</label><select id="r_room">${rooms.filter(r=>r.active!==false).map(roomOpt).join("")}</select>
+ <div class="grid2"><div><label for="r_s">ເລີ່ມ</label><input id="r_s" type="datetime-local"></div><div><label for="r_e">ສິ້ນສຸດ</label><input id="r_e" type="datetime-local"></div></div>
+ <label for="r_title">ຫົວຂໍ້ການປະຊຸມ</label><input id="r_title">
+ <div class="grid2"><div><label for="r_who">ຊື່ຜູ້ຈອງ</label><input id="r_who" value="${esc(me.name||"")}"></div><div><label for="r_dep">ພະແນກ</label><input id="r_dep"></div></div>
+ <label for="r_pax">ຈຳນວນຜູ້ເຂົ້າຮ່ວມ</label><input id="r_pax" type="number" min="1">
+ <label for="r_note">ອຸປະກອນທີ່ຕ້ອງການ / ໝາຍເຫດ</label><textarea id="r_note" rows="2"></textarea>
+ <button class="btn" id="rsend">ຢືນຢັນການຈອງຫ້ອງ</button><div id="rmsg"></div></div>`;
+ $("#rsend").onclick=submitRoom;
+}
+async function submitRoom(){
+ const g=i=>$("#"+i).value.trim(),m=$("#rmsg");
+ const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`};
+ const b={uid:me.id,booker:g("r_who"),roomId:g("r_room"),start:g("r_s"),end:g("r_e"),title:g("r_title"),dep:g("r_dep"),pax:g("r_pax"),note:g("r_note"),cancelled:false,created:new Date().toISOString()};
+ if(!b.booker)return bad("ກະລຸນາໃສ່ຊື່ຜູ້ຈອງ");
+ if(!b.roomId||!b.start||!b.end||!b.title)return bad("ກະລຸນາເລືອກຫ້ອງ, ໃສ່ເວລາ ແລະ ຫົວຂໍ້ການປະຊຸມໃຫ້ຄົບ");
+ if(b.end<=b.start)return bad("ເວລາສິ້ນສຸດຕ້ອງຢູ່ຫຼັງເວລາເລີ່ມ");
+ const r=rOf(b.roomId);if(r&&r.capacity&&b.pax&&+b.pax>+r.capacity)return bad(`ຫ້ອງນີ້ຮອງຮັບໄດ້ ${esc(r.capacity)} ຄົນ`);
+ const c=rclash(b.roomId,b.start,b.end);
+ if(c)return bad(`ຫ້ອງນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
+ $("#rsend").disabled=true;
+ try{await db.collection("roomBookings").add(b);m.innerHTML=`<div class="msg ok">ຈອງຫ້ອງສຳເລັດແລ້ວ</div>`;confetti();toast("ຈອງຫ້ອງປະຊຸມສຳເລັດ");
+  ["r_s","r_e","r_title","r_dep","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
+ catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
+ $("#rsend").disabled=false;
+}
+
+/* ===== ລາຍການຈອງ ===== */
+async function decide(id,status){
+ if(status==="approved"){const b=bookings.find(x=>x.id===id);const c=b&&clash(b.vehicleId,b.start,b.end,id);if(c&&statusOf(c)==="approved")return toast("ຊ້ອນກັບການຈອງທີ່ອະນຸມັດແລ້ວ")}
+ try{await db.doc("decisions/"+id).set({status,by:me.id,at:new Date().toISOString()});toast(status==="approved"?"ອະນຸມັດແລ້ວ":"ບໍ່ອະນຸມັດ");if(status==="approved")confetti()}
+ catch(e){toast("ບໍ່ມີສິດອະນຸມັດ")}
+}
+async function cancelB(kind,id){
+ const key=kind+id;
+ if(armed!==key){armed=key;render();return}
+ armed=null;try{await db.doc((kind==="car"?"bookings/":"roomBookings/")+id).update({cancelled:true});toast("ຍົກເລີກການຈອງແລ້ວ")}catch(e){toast("ຍົກເລີກບໍ່ສຳເລັດ")}
+}
+function items(){
+ const a=bookings.map(b=>{const v=vOf(b.vehicleId);return{kind:"car",id:b.id,uid:b.uid,booker:b.booker,start:b.start,end:b.end,s:statusOf(b),
+  title:(v?v.plate:"(ລົດຖືກລຶບ)")+" · "+b.dest,meta:[b.dep,b.tel,b.pax?b.pax+" ຄົນ":""].filter(Boolean).join(" · "),note:b.purpose}});
+ const r=rbookings.map(b=>{const x=rOf(b.roomId);return{kind:"room",id:b.id,uid:b.uid,booker:b.booker,start:b.start,end:b.end,s:b.cancelled?"cancelled":"approved",
+  title:(x?x.name:"(ຫ້ອງຖືກລຶບ)")+" · "+b.title,meta:[b.dep,b.pax?b.pax+" ຄົນ":""].filter(Boolean).join(" · "),note:b.note}});
+ return[...a,...r].sort((p,q)=>q.start.localeCompare(p.start));
+}
+function vList(){
+ let rows=items();
+ if(filter==="car")rows=rows.filter(r=>r.kind==="car");
+ if(filter==="room")rows=rows.filter(r=>r.kind==="room");
+ if(filter==="mine")rows=rows.filter(r=>r.uid===me.id);
+ if(filter==="pending")rows=rows.filter(r=>r.s==="pending");
+ const chips=[["all","ທັງໝົດ"],["car","ລົດ"],["room","ຫ້ອງປະຊຸມ"],["mine","ຂອງຂ້ອຍ"],["pending","ລໍຖ້າອະນຸມັດ"]].map(([k,n])=>`<button class="chip ${filter===k?"on":""}" data-f="${k}">${n}</button>`).join("");
+ $("#view").innerHTML=`<div class="panel"><h2>ລາຍການຈອງ</h2><div class="chips">${chips}</div>${rows.length?rows.map((b,i)=>{
+  const mine=b.uid===me.id,key=b.kind+b.id;let act="";
+  if(isAdmin&&b.kind==="car"&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
+  if((mine||isAdmin)&&["pending","approved"].includes(b.s))act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
+  const lbl=b.kind==="room"&&b.s==="approved"?"ຈອງສຳເລັດ":ST[b.s];
+  return `<div class="item" style="animation-delay:${Math.min(i,10)*50}ms"><div><div class="t"><span class="kind">${b.kind==="car"?"ລົດ":"ຫ້ອງ"}</span>${esc(b.title)}</div>
+   <div class="m num">${fmt(b.start)} – ${fmt(b.end)}</div>
+   <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
+   <div><span class="pill ${b.s}">${lbl}</span><div style="margin-top:6px">${act}</div></div></div>`}).join(""):emptyIco(filter==="room"?"room":filter==="car"?"car":"cal","ຍັງບໍ່ມີລາຍການຈອງ")}</div>`;
+ $("#view").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filter=c.dataset.f;render()});
+ $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
+}
+
+/* ===== ຕາຕະລາງລາຍວັນ (ລົດ / ຫ້ອງ) ===== */
+function vCal(){
+ const s=calDay+"T00:00",e=calDay+"T23:59",car=calKind==="car";
+ const res=(car?vehicles:rooms).filter(v=>v.active!==false);
+ const toMin=t=>{const[h,m]=t.split(":");return +h*60+ +m};
+ const chips=[["car","ລົດ"],["room","ຫ້ອງປະຊຸມ"]].map(([k,n])=>`<button class="chip ${calKind===k?"on":""}" data-k="${k}">${n}</button>`).join("");
+ $("#view").innerHTML=`<div class="panel"><h2>ຕາຕະລາງລາຍວັນ</h2><div class="chips">${chips}</div><label for="d">ເລືອກວັນທີ</label><input id="d" class="datepick" type="date" value="${calDay}">
+ ${res.length?res.map(v=>{
+  const bs=(car?bookings.filter(b=>b.vehicleId===v.id&&["pending","approved"].includes(statusOf(b))):rbookings.filter(b=>b.roomId===v.id&&!b.cancelled)).filter(b=>b.start<=e&&b.end>=s).sort((a,b)=>a.start.localeCompare(b.start));
+  const blocks=bs.map((b,i)=>{const st=b.start.slice(0,10)<calDay?0:toMin(b.start.slice(11,16));const en=b.end.slice(0,10)>calDay?1440:toMin(b.end.slice(11,16));
+   const sx=car?statusOf(b):"approved";const lab=car?bookerOf(b):b.title;
+   return `<div class="blk ${sx}" style="left:${st/14.4}%;width:${Math.max((en-st)/14.4,2)}%;animation-delay:${i*120}ms" title="${esc(lab)} · ${esc(bookerOf(b))} ${fmt(b.start)}–${fmt(b.end)}">${esc(lab)}</div>`}).join("");
+  return `<div class="row"><div class="h"><span>${esc(car?v.plate:v.name)} <small style="font-weight:400;color:var(--mut)">${esc(car?(v.name||""):(v.capacity?v.capacity+" ຄົນ":""))}</small></span>${bs.length?"":'<span class="free">ຫວ່າງທັງມື້</span>'}</div><div class="bar">${blocks}</div><div class="hours num"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`}).join(""):emptyIco(car?"car":"room",car?"ຍັງບໍ່ມີລົດໃນລະບົບ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມໃນລະບົບ")}</div>`;
+ $("#d").onchange=ev=>{calDay=ev.target.value||today();vCal()};
+ $("#view").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{calKind=c.dataset.k;vCal()});
+}
+
+/* ===== ຂໍ້ມູນລົດ ແລະ ຫ້ອງ ===== */
+async function addCar(){
+ const plate=$("#c_plate").value.trim();if(!plate)return toast("ກະລຸນາໃສ່ທະບຽນລົດ");
+ try{await db.collection("vehicles").add({plate,name:$("#c_name").value.trim(),seats:$("#c_seats").value,note:$("#c_note").value.trim(),active:true});toast("ເພີ່ມລົດແລ້ວ")}
+ catch(e){toast("ເພີ່ມບໍ່ໄດ້: ບໍ່ມີສິດຜູ້ດູແລ")}
+}
+async function addRoom(){
+ const name=$("#m_name").value.trim();if(!name)return toast("ກະລຸນາໃສ່ຊື່ຫ້ອງ");
+ try{await db.collection("rooms").add({name,capacity:$("#m_cap").value,note:$("#m_note").value.trim(),active:true});toast("ເພີ່ມຫ້ອງແລ້ວ")}
+ catch(e){toast("ເພີ່ມບໍ່ໄດ້: ບໍ່ມີສິດຜູ້ດູແລ")}
+}
+async function toggleRes(col,arr,id){const v=arr.find(x=>x.id===id);try{await db.doc(col+"/"+id).update({active:v.active===false})}catch(e){toast("ບໍ່ມີສິດ")}}
+async function delRes(col,id){
+ const key=col+id;
+ if(armed!==key){armed=key;render();
+  const n=(col==="rooms"?rbookings.filter(b=>b.roomId===id&&!b.cancelled):bookings.filter(b=>b.vehicleId===id&&!b.cancelled)).length;
+  toast(n?`ມີ ${n} ລາຍການຈອງທີ່ຍັງໃຊ້ຢູ່ · ກົດອີກຄັ້ງເພື່ອລຶບ`:"ກົດອີກຄັ້ງເພື່ອລຶບ");return}
+ armed=null;
+ try{await db.doc(col+"/"+id).delete();toast(col==="rooms"?"ລຶບຫ້ອງປະຊຸມແລ້ວ":"ລຶບລົດແລ້ວ")}
+ catch(e){toast("ລຶບບໍ່ສຳເລັດ")}
+ render();
+}
+function resList(title,arr,col,line,emptyTxt){
+ return `<div class="panel"><h2>${title}</h2>${arr.length?arr.map((v,i)=>`<div class="item" style="animation-delay:${i*60}ms"><div>${line(v)}</div>
+ <div><span class="pill ${v.active===false?"cancelled":"approved"}">${v.active===false?"ປິດໃຊ້ງານ":"ພ້ອມໃຊ້"}</span>${isAdmin?`<div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button class="sm" data-act="toggle" data-c="${col}" data-id="${v.id}">${v.active===false?"ເປີດໃຊ້ງານ":"ປິດໃຊ້ງານ"}</button><button class="sm no ${armed===col+v.id?"arm":""}" data-act="del" data-c="${col}" data-id="${v.id}">${armed===col+v.id?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button></div>`:""}</div></div>`).join(""):emptyIco(col==="rooms"?"room":"car",emptyTxt)}</div>`;
+}
+function adminsCount(){return Object.values(acctAll()).filter(x=>x.role==="admin").length}
+async function setRole(k){
+ const a=acctAll()[k];if(!a)return;
+ if(a.role==="admin"&&adminsCount()<=1)return toast("ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ");
+ if(a.role==="admin"&&ADMIN_EMAILS.includes(a.email))return toast("ອີເມວນີ້ຖືກກຳນົດເປັນຜູ້ດູແລໄວ້ໃນລະບົບ");
+ const next=a.role==="admin"?"user":"admin";
+ try{await db.collection("accounts").doc(k).update({role:next})}catch(e){return toast("ປ່ຽນສິດບໍ່ສຳເລັດ")}
+ if(a.email===myEmail){isAdmin=next==="admin";window.__local.setMe({isOwner:isAdmin,canEdit:isAdmin})}
+ armed=null;toast(next==="admin"?"ຕັ້ງເປັນຜູ້ດູແລແລ້ວ":"ປ່ຽນເປັນພະນັກງານແລ້ວ");updateTabs();render();
+}
+async function delAcct(k){
+ const a=acctAll()[k];if(!a)return;
+ if(a.email===myEmail)return toast("ລຶບບັນຊີຂອງຕົນເອງບໍ່ໄດ້");
+ if(a.role==="admin"&&adminsCount()<=1)return toast("ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ");
+ if(armed!=="u"+k){armed="u"+k;render();toast("ກົດອີກຄັ້ງເພື່ອລຶບບັນຊີ");return}
+ armed=null;
+ try{await db.collection("accounts").doc(k).delete();toast("ລຶບບັນຊີແລ້ວ")}catch(e){toast("ລຶບບໍ່ສຳເລັດ")}
+ render();
+}
+function usersPanel(){
+ if(!isAdmin)return "";
+ const all=Object.entries(acctAll());
+ return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດ ຫຼື ລຶບບັນຊີ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ</p>
+ ${all.map(([k,a],i)=>`<div class="item" style="animation-delay:${i*60}ms">
+  <div><div class="t">${esc(a.name||a.email)}${a.email===myEmail?" (ທ່ານ)":""}</div><div class="m">${esc(a.email)}</div></div>
+  <div><span class="pill ${a.role==="admin"?"approved":"pending"}">${a.role==="admin"?"ຜູ້ດູແລ":"ພະນັກງານ"}</span>
+   <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
+    <button class="sm" data-u="role" data-k="${esc(k)}">${a.role==="admin"?"ປ່ຽນເປັນພະນັກງານ":"ຕັ້ງເປັນຜູ້ດູແລ"}</button>
+    <button class="sm no ${armed==="u"+k?"arm":""}" data-u="del" data-k="${esc(k)}">${armed==="u"+k?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button>
+   </div></div></div>`).join("")}</div>`;
+}
+function vRes(){
+ const add=isAdmin?`<div class="panel"><h2>ເພີ່ມລົດ</h2>
+ <div class="grid2"><div><label for="c_plate">ທະບຽນ</label><input id="c_plate"></div><div><label for="c_name">ລຸ້ນ / ຊື່ລົດ</label><input id="c_name"></div></div>
+ <div class="grid2"><div><label for="c_seats">ຈຳນວນບ່ອນນັ່ງ</label><input id="c_seats" type="number" min="1"></div><div><label for="c_note">ໝາຍເຫດ</label><input id="c_note"></div></div>
+ <button class="btn" id="addcar">ເພີ່ມລົດ</button></div>
+ <div class="panel"><h2>ເພີ່ມຫ້ອງປະຊຸມ</h2>
+ <div class="grid2"><div><label for="m_name">ຊື່ຫ້ອງ</label><input id="m_name"></div><div><label for="m_cap">ຈຳນວນທີ່ຮອງຮັບ (ຄົນ)</label><input id="m_cap" type="number" min="1"></div></div>
+ <label for="m_note">ອຸປະກອນໃນຫ້ອງ / ໝາຍເຫດ</label><input id="m_note">
+ <button class="btn" id="addroom">ເພີ່ມຫ້ອງ</button></div>`:`<div class="msg err" style="margin-bottom:14px">ສະເພາະຜູ້ດູແລທີ່ເພີ່ມ ຫຼື ປິດລົດ ແລະ ຫ້ອງໄດ້</div>`;
+ $("#view").innerHTML=add+
+  resList("ລົດທັງໝົດ",vehicles,"vehicles",v=>`<div class="t">${esc(v.plate)}</div><div class="m">${esc(v.name||"")} · ${esc(v.seats||"?")} ບ່ອນນັ່ງ${v.note?" · "+esc(v.note):""}</div>`,isAdmin?"ຍັງບໍ່ມີລົດ ເພີ່ມຄັນທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີລົດ")+
+  resList("ຫ້ອງປະຊຸມທັງໝົດ",rooms,"rooms",v=>`<div class="t">${esc(v.name)}</div><div class="m">${esc(v.capacity||"?")} ຄົນ${v.note?" · "+esc(v.note):""}</div>`,isAdmin?"ຍັງບໍ່ມີຫ້ອງ ເພີ່ມຫ້ອງທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມ")+
+  usersPanel();
+ $("#view").querySelectorAll("button[data-u]").forEach(b=>b.onclick=()=>b.dataset.u==="role"?setRole(b.dataset.k):delAcct(b.dataset.k));
+ const a=$("#addcar");if(a)a.onclick=addCar;const r=$("#addroom");if(r)r.onclick=addRoom;
+ $("#view").querySelectorAll("button.sm[data-act]").forEach(b=>b.onclick=()=>{
+  const col=b.dataset.c,id=b.dataset.id;
+  if(b.dataset.act==="del")return delRes(col,id);
+  armed=null;toggleRes(col,col==="rooms"?rooms:vehicles,id)});
+}
+boot();
+</script>
+
+</body></html>
