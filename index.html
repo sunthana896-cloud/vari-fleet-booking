@@ -158,6 +158,48 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* ============================================================
+   ໜ້າຈໍມືຖື — ປັບໃຫ້ອ່ານງ່າຍ ແລະ ກົດດ້ວຍນິ້ວໄດ້ສະດວກ
+   ============================================================ */
+@media(max-width:560px){
+ .wrap{padding-inline:14px;padding-block:12px 40px}
+
+ /* ຫົວເລື່ອງ: ຈັດເປັນຊັ້ນ ບໍ່ໃຫ້ອັດກັນ */
+ .top{padding:12px 14px;gap:10px;flex-direction:column;align-items:stretch}
+ .brand{gap:10px}
+ .brand .logo img{height:34px;width:auto}
+ .brand .co{padding-left:10px}
+ .brand .co b{font-size:15px}
+ .brand .co span{font-size:12px}
+ #meBox{width:100%;gap:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.18)}
+ #meBox img{display:none}
+ #meBox>div{min-width:0;flex:1;line-height:1.35}
+ #meBox>div b{font-size:14px}
+ #meBox small{font-size:11px;word-break:break-all}
+ #meBox .sm{margin:0;flex:none;white-space:nowrap;padding:9px 14px}
+ .sysname{font-size:13px;line-height:1.45}
+
+ /* ແຖບເມນູ: ເລື່ອນຊ້າຍ-ຂວາ ແທນການຂຶ້ນແຖວໃໝ່ */
+ .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;
+  margin-inline:-14px;padding-inline:14px;gap:6px}
+ .tabs::-webkit-scrollbar{display:none}
+ .tabs button{flex:none;scroll-snap-align:start;white-space:nowrap}
+
+ .panel{padding:15px;border-radius:12px}
+
+ /* ຊ່ອງຂຽນ: 16px ກັນ iOS ຊູມເອງເວລາກົດ */
+ input,select,textarea{font-size:16px;padding:12px}
+ input[type=datetime-local]{min-height:48px}
+ label{margin-top:12px}
+
+ /* ປຸ່ມໃຫຍ່ ກົດງ່າຍ */
+ .btn{width:100%;padding:14px 20px}
+ .sm{padding:8px 14px;font-size:13px}
+ .pww .eye{padding:10px 12px}
+}
+
 </style>
 
 <div id="gate">
