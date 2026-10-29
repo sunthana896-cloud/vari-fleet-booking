@@ -230,45 +230,95 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
 </div>
 <div id="toast" role="status"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 /* ============================================================
-   LOCAL SHIM — ໃຊ້ສຳລັບ localhost ເທົ່ານັ້ນ
-   ແທນທີ່ window.claude (user + db) ດ້ວຍ localStorage
-   ຂໍ້ມູນເກັບຢູ່ໃນບຣາວເຊີເຄື່ອງນີ້ ບໍ່ໄດ້ແບ່ງປັນກັບຄົນອື່ນ
+   SUPABASE ADAPTER
+   ເຊື່ອມແອັບກັບຖານຂໍ້ມູນກາງ Supabase
+   ຮັກສາໜ້າຕາຄຳສັ່ງເດີມ (collection/doc/onSnapshot) ໄວ້
+   ເພື່ອບໍ່ຕ້ອງແກ້ໂຕແອັບທັງໝົດ
    ============================================================ */
 (function(){
- var KEY="vfm_local_db_v1", UKEY="vfm_local_uid_v1";
+ var SB_URL="https://wstgajpuyupvuoqzuzpw.supabase.co";
+ var SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzdGdhanB1eXVwdnVvcXp1enB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNjA0NDYsImV4cCI6MjEwODgzNjQ0Nn0.14Z2w3_IXOLS1N41rqUC1b316FQ5GRNjr0VJqcxw0O0";
  var PIX="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
- function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
- function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
- var L={};
- function snap(col){var d=load()[col]||{};return{docs:Object.keys(d).map(function(id){return{id:id,data:function(){return d[id]}}})}}
- function notify(col){(L[col]||[]).forEach(function(cb){try{cb(snap(col))}catch(e){}})}
- function nid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
- function docRef(col,id){return{
-  get:function(){var d=(load()[col]||{})[id];return Promise.resolve({exists:!!d,data:function(){return d}})},
-  set:function(o){var a=load();(a[col]=a[col]||{})[id]=Object.assign({},o);save(a);notify(col);return Promise.resolve()},
-  update:function(o){var a=load();(a[col]=a[col]||{})[id]=Object.assign({},(a[col]||{})[id]||{},o);save(a);notify(col);return Promise.resolve()},
-  delete:function(){var a=load();if(a[col])delete a[col][id];save(a);notify(col);return Promise.resolve()}}}
- function colRef(col){return{
-  doc:function(id){return docRef(col,id)},
-  add:function(o){var id=nid();return docRef(col,id).set(o).then(function(){return{id:id}})},
-  onSnapshot:function(cb,onErr){(L[col]=L[col]||[]).push(cb);
-   setTimeout(function(){try{cb(snap(col))}catch(e){onErr&&onErr(e)}},0);return function(){}}}}
- var db={collection:colRef,doc:function(p){var i=p.lastIndexOf("/");return docRef(p.slice(0,i),p.slice(i+1))}};
- var ME={id:"anon",name:"",email:null,avatarUrl:PIX,isOwner:false,canEdit:false};
+ var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+
+ /* ຊື່ທີ່ແອັບໃຊ້ <-> ຊື່ຄໍລຳໃນຖານຂໍ້ມູນ */
+ var MAP={
+  vehicles    :{table:"vehicles"},
+  rooms       :{table:"rooms"},
+  profiles    :{table:"profiles"},
+  bookings    :{table:"bookings",     to:{vehicleId:"vehicle_id",start:"start_ts",end:"end_ts",created:"created_at"}},
+  roomBookings:{table:"room_bookings",to:{roomId:"room_id",      start:"start_ts",end:"end_ts",created:"created_at"}},
+  decisions   :{table:"decisions",    to:{by:"decided_by",at:"decided_at"},pk:"booking_id"}
+ };
+ function cfg(c){var x=MAP[c]||{table:c};return{table:x.table,to:x.to||{},pk:x.pk||"id"}}
+ function toDb(c,o){var m=cfg(c).to,r={};for(var k in o)r[m[k]||k]=o[k];return r}
+ function toApp(c,row){var m=cfg(c).to,inv={},r={};for(var k in m)inv[m[k]]=k;
+  for(var k in row)r[inv[k]||k]=row[k];return r}
+
+ var listeners={},chans={};
+ function snapshot(c){
+  var x=cfg(c);
+  return sb.from(x.table).select("*").then(function(res){
+   if(res.error)throw res.error;
+   return {docs:(res.data||[]).map(function(row){
+    var d=toApp(c,row);return{id:row[x.pk],data:function(){return d}}})};
+  });
+ }
+ function refresh(c){
+  if(!listeners[c]||!listeners[c].length)return;
+  snapshot(c).then(function(s){listeners[c].forEach(function(f){try{f(s)}catch(e){}})})
+             .catch(function(){});
+ }
+ function watch(c,cb,onErr){
+  (listeners[c]=listeners[c]||[]).push(cb);
+  snapshot(c).then(cb).catch(function(e){onErr&&onErr(e)});
+  if(!chans[c]){
+   chans[c]=sb.channel("rt_"+c)
+    .on("postgres_changes",{event:"*",schema:"public",table:cfg(c).table},function(){refresh(c)})
+    .subscribe();
+  }
+  return function(){};
+ }
+ function done(c){return function(r){if(r&&r.error)throw r.error;refresh(c);return r}}
+
+ function docRef(c,id){
+  var x=cfg(c);
+  return{
+   get:function(){return sb.from(x.table).select("*").eq(x.pk,id).maybeSingle().then(function(r){
+     var d=r.data?toApp(c,r.data):null;return{exists:!!d,data:function(){return d}}})},
+   set:function(o){var row=toDb(c,o);row[x.pk]=id;
+     return sb.from(x.table).upsert(row).then(done(c))},
+   update:function(o){return sb.from(x.table).update(toDb(c,o)).eq(x.pk,id).then(done(c))},
+   delete:function(){return sb.from(x.table).delete().eq(x.pk,id).then(done(c))}
+  };
+ }
+ function colRef(c){
+  var x=cfg(c);
+  return{
+   doc:function(id){return docRef(c,id)},
+   add:function(o){return sb.from(x.table).insert(toDb(c,o)).select().then(function(r){
+     if(r.error)throw r.error;refresh(c);
+     return{id:r.data&&r.data[0]&&r.data[0][x.pk]}})},
+   onSnapshot:function(cb,onErr){return watch(c,cb,onErr)}
+  };
+ }
+ var db={collection:colRef,
+   doc:function(p){var i=p.lastIndexOf("/");return docRef(p.slice(0,i),p.slice(i+1))}};
+
+ var ME={id:null,name:"",email:null,avatarUrl:PIX,isOwner:false,canEdit:false};
  var user={
   me:function(){return Promise.resolve(ME)},
-  profiles:function(ids){var a=load()["accounts"]||{},o={};
-   Object.keys(a).forEach(function(k){var r=a[k];
-    if(!ids||ids.indexOf(r.uid)>=0)o[r.uid]={name:r.name||r.email,avatarUrl:PIX}});
-   return Promise.resolve(o)}};
- window.__local={
-  newId:nid,
-  accounts:function(){return load()["accounts"]||{}},
-  setMe:function(o){for(var k in o)ME[k]=o[k];return ME}};
+  profiles:function(){
+   return sb.from("profiles").select("id,name,email").then(function(r){
+    var o={};(r.data||[]).forEach(function(p){o[p.id]={name:p.name||p.email,avatarUrl:PIX}});
+    return o});
+  }};
+
+ window.__sb={client:sb,setMe:function(o){for(var k in o)ME[k]=o[k];return ME}};
  window.claude={use:function(w){return Promise.resolve(w==="user"?user:w==="db"?db:null)}};
- window.addEventListener("storage",function(e){if(e.key===KEY)Object.keys(L).forEach(notify)});
 })();
 </script>
 <style>
@@ -292,7 +342,8 @@ const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+
 
 let user=null,db=null,me={id:null,name:"",email:null,avatarUrl:"",isOwner:false,canEdit:false};
 let isAdmin=false,tab="car",filter="all",calDay=today(),calKind="car",myEmail="";
-let vehicles=[],rooms=[],bookings=[],rbookings=[],decisions={},profs={},armed=null,loginRef=null,fails=0,lockUntil=0;
+let vehicles=[],rooms=[],bookings=[],rbookings=[],decisions={},profs={},accounts=[],armed=null,loginRef=null,fails=0,lockUntil=0;
+const SB=()=>window.__sb.client;
 
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("show"),2600)}
 function confetti(){
@@ -324,34 +375,27 @@ async function boot(){
  const c=window.claude;
  try{ if(c&&c.use){user=await c.use("user");db=await c.use("db")} }catch(e){}
  if(user){try{me=await user.me()}catch(e){}}
- isAdmin=!!(me.isOwner||me.canEdit);
  const g=$("#gateBody");
- if(!db||!me.id||!(window.crypto&&crypto.subtle)){
-  const why=[];
-  if(!(c&&c.use))why.push("ໜ້ານີ້ບໍ່ໄດ້ເປີດຜ່ານ claude.ai (ໃຫ້ເປີດຈາກລິ້ງ claude.ai/artifact/… ເທົ່ານັ້ນ ບໍ່ແມ່ນໄຟລ໌ໃນເຄື່ອງ)");
-  else{
-   if(!db)why.push("ຖານຂໍ້ມູນຮ່ວມກັນບໍ່ພ້ອມ ຫຼື ບັນຊີນີ້ບໍ່ມີສິດເຂົ້າ");
-   if(!me.id)why.push("ບໍ່ພົບຕົວຕົນຜູ້ໃຊ້ (ຍັງບໍ່ໄດ້ລັອກອິນ Claude ຫຼື ບໍ່ມີສິດ)");
-  }
-  if(!(window.crypto&&crypto.subtle))why.push("ບຣາວເຊີນີ້ບໍ່ຮອງຮັບການເຂົ້າລະຫັດລະຫັດຜ່ານ");
-  g.innerHTML=`<div class="msg err">ຍັງເຂົ້າລະບົບບໍ່ໄດ້. ກະລຸນາລັອກອິນບັນຊີ Claude ແລ້ວເປີດລິ້ງນີ້ອີກຄັ້ງ ຫຼື ຂໍສິດເຂົ້າໃຊ້ຈາກຜູ້ດູແລ.</div><div class="note" style="text-align:left"><b>ສາເຫດ:</b><br>${why.map(x=>"• "+esc(x)).join("<br>")}</div>`;return}
- let seen="";try{seen=sessionStorage.getItem("cb2_in")||""}catch(e){}
- if(seen){const a=acctGet(seen);if(a){applyAcct(a);enter();return}}
- showLogin(acctCount()?"login":"register");
+ if(!db||!window.__sb){
+  g.innerHTML=`<div class="msg err">ເຊື່ອມຕໍ່ຖານຂໍ້ມູນບໍ່ໄດ້</div><div class="note" style="text-align:left"><b>ສາເຫດ:</b><br>• ໂຫຼດ Supabase ບໍ່ສຳເລັດ (ກວດອິນເຕີເນັດ ແລ້ວໂຫຼດໜ້ານີ້ໃໝ່)</div>`;return}
+ let sess=null;
+ try{const r=await SB().auth.getSession();sess=r.data&&r.data.session}catch(e){}
+ if(sess&&sess.user&&await loadProfile(sess.user)){enter();return}
+ showLogin("login");
 }
-/* ===== ບັນຊີທ້ອງຖິ່ນ — ຮອງຮັບຫຼາຍບັນຊີ (ຜູ້ດູແລ / ພະນັກງານ) ===== */
-const acctKey=m=>"acct_"+m.trim().toLowerCase().replace(/[^a-z0-9]+/g,"_");
-const acctAll=()=>window.__local.accounts();
-const acctCount=()=>Object.keys(acctAll()).length;
-const acctGet=m=>acctAll()[acctKey(m)]||null;
-const acctRef=m=>db.collection("accounts").doc(acctKey(m));
-function applyAcct(a){
- if(ADMIN_EMAILS.includes(a.email)&&a.role!=="admin"){a.role="admin";try{acctRef(a.email).set(a)}catch(e){}}
- myEmail=a.email;isAdmin=a.role==="admin";
- window.__local.setMe({id:a.uid,name:a.name||a.email,email:a.email,isOwner:isAdmin,canEdit:isAdmin});
+/* ===== ບັນຊີ (Supabase Auth + ຕາຕະລາງ profiles) ===== */
+async function loadProfile(u,tries){
+ tries=tries||0;
+ const{data,error}=await SB().from("profiles").select("*").eq("id",u.id).maybeSingle();
+ if((error||!data)&&tries<4){await new Promise(r=>setTimeout(r,600));return loadProfile(u,tries+1)}
+ if(!data)return false;
+ myEmail=data.email;isAdmin=data.role==="admin";
+ window.__sb.setMe({id:data.id,name:data.name||data.email,email:data.email,isOwner:isAdmin,canEdit:isAdmin});
+ return true;
 }
+const adminsCount=()=>accounts.filter(a=>a.role==="admin").length;
 function showLogin(mode){
- const g=$("#gateBody"),reg=mode==="register",first=!acctCount();
+ const g=$("#gateBody"),reg=mode==="register";
  g.innerHTML=`<div class="who"><div><b>${reg?"ສ້າງບັນຊີໃໝ່":"ເຂົ້າສູ່ລະບົບ"}</b><br>
   <small>${reg?"ບັນຊີໃໝ່ຈະເປັນພະນັກງານ · ສິດຜູ້ດູແລໃຫ້ຜູ້ດູແລຕັ້ງໃຫ້ພາຍຫຼັງ":"ໃສ່ອີເມວ ແລະ ລະຫັດຜ່ານຂອງທ່ານ"}</small></div></div>
  <form class="lf" id="lf" novalidate>
@@ -370,43 +414,46 @@ function showLogin(mode){
   b.classList.toggle("on",show);i.focus()});
 }
 async function doLogin(reg){
- const m=$("#lmsg"),box=$(".gate-box");
- const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`;box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake")};
+ const m=$("#lmsg"),box=$(".gate-box"),btn=$("#enter");
+ const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`;box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake");btn.disabled=false};
+ const ok=t=>{m.innerHTML=`<div class="msg ok">${t}</div>`;btn.disabled=false};
  if(Date.now()<lockUntil)return bad("ລອງຜິດຫຼາຍເກີນໄປ ກະລຸນາລໍຖ້າ "+Math.ceil((lockUntil-Date.now())/1000)+" ວິນາທີ");
  const mail=$("#l_mail").value.trim().toLowerCase(),pw=$("#l_pw").value;
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail))return bad("ຮູບແບບອີເມວບໍ່ຖືກຕ້ອງ");
+ btn.disabled=true;
  if(reg){
   const nm=$("#l_name").value.trim();
   if(nm.length<2)return bad("ກະລຸນາໃສ່ຊື່ ແລະ ນາມສະກຸນ");
-  if(acctGet(mail))return bad("ອີເມວນີ້ມີບັນຊີຢູ່ແລ້ວ ກະລຸນາເຂົ້າສູ່ລະບົບ");
   if(pw.length<8)return bad("ລະຫັດຜ່ານຕ້ອງມີຢ່າງນ້ອຍ 8 ຕົວ");
   if(pw!==$("#l_pw2").value)return bad("ລະຫັດຜ່ານສອງຄັ້ງບໍ່ກົງກັນ");
-  const role=ADMIN_EMAILS.includes(mail)||(!ADMIN_EMAILS.length&&!acctCount())?"admin":"user";
-  const salt=crypto.getRandomValues(new Uint8Array(16)),iter=150000;
-  const a={email:mail,name:nm,role,uid:"u-"+window.__local.newId(),salt:b64(salt),
-   hash:await hashPw(pw,salt,iter),iter,created:new Date().toISOString()};
-  try{await acctRef(mail).set(a)}catch(e){return bad("ບັນທຶກບັນຊີບໍ່ສຳເລັດ")}
-  applyAcct(a);confetti();return enter();
+  const{data,error}=await SB().auth.signUp({email:mail,password:pw,options:{data:{name:nm}}});
+  if(error)return bad(/already|registered/i.test(error.message)?"ອີເມວນີ້ມີບັນຊີຢູ່ແລ້ວ ກະລຸນາເຂົ້າສູ່ລະບົບ":esc(error.message));
+  if(!data.session)return ok("ສ້າງບັນຊີແລ້ວ · ກະລຸນາເປີດອີເມວເພື່ອຢືນຢັນ ແລ້ວຈຶ່ງເຂົ້າສູ່ລະບົບ");
+  if(!await loadProfile(data.user))return bad("ສ້າງບັນຊີແລ້ວ ແຕ່ໂຫຼດຂໍ້ມູນຜູ້ໃຊ້ບໍ່ໄດ້ ລອງເຂົ້າສູ່ລະບົບໃໝ່");
+  confetti();return enter();
  }
- const rec=acctGet(mail);
- const ok=rec&&(await hashPw(pw,unb64(rec.salt),rec.iter))===rec.hash;
- if(!ok){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}return bad("ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ")}
- fails=0;applyAcct(rec);confetti();enter();
+ const{data,error}=await SB().auth.signInWithPassword({email:mail,password:pw});
+ if(error){fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}
+  return bad(/confirm/i.test(error.message)?"ຍັງບໍ່ໄດ້ຢືນຢັນອີເມວ ກະລຸນາເປີດອີເມວກ່ອນ":"ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ")}
+ fails=0;
+ if(!await loadProfile(data.user))return bad("ເຂົ້າສູ່ລະບົບໄດ້ ແຕ່ຍັງບໍ່ມີຂໍ້ມູນຜູ້ໃຊ້ ໃຫ້ຖາມຜູ້ດູແລ");
+ confetti();enter();
 }
 function enter(){
- try{sessionStorage.setItem("cb2_in",myEmail)}catch(e){}
+ 
  $("#gate").hidden=true;$("#app").hidden=false;
  const pendAdmin=!isAdmin&&ADMIN_EMAILS.includes(myEmail);
  $("#meBox").innerHTML=`<img alt="" src="${esc(me.avatarUrl)}"><div><b>${esc(me.name||"ຜູ້ໃຊ້")}</b><br><small>${esc(myEmail)}</small> <span class="role ${isAdmin?"admin":"user"}">${isAdmin?"ຜູ້ດູແລ":"ພະນັກງານ"}</span></div>`;
  if(pendAdmin)setTimeout(()=>toast("ອີເມວນີ້ເປັນຜູ້ດູແລ ແຕ່ບັນຊີ Claude ນີ້ຍັງບໍ່ມີສິດ Editor"),600);
  const out=document.createElement("button");out.className="sm";out.textContent="ອອກຈາກລະບົບ";
- out.onclick=()=>{try{sessionStorage.removeItem("cb2_in")}catch(e){}location.reload()};$("#meBox").appendChild(out);
+ out.onclick=async()=>{try{await SB().auth.signOut()}catch(e){}location.reload()};$("#meBox").appendChild(out);
  subscribe();render();
 }
 function subscribe(){
  const onErr=e=>toast("ເຊື່ອມຖານຂໍ້ມູນບໍ່ໄດ້: "+(e&&e.code||""));
  const uids=()=>[...new Set([...bookings,...rbookings].map(b=>b.uid).filter(Boolean))];
  const loadProfs=async()=>{try{const ids=uids();if(user&&ids.length)profs=await user.profiles(ids)}catch(e){}};
+ db.collection("profiles").onSnapshot(s=>{accounts=s.docs.map(d=>({id:d.id,...d.data()}));changed()},onErr);
  db.collection("vehicles").onSnapshot(s=>{vehicles=s.docs.map(d=>({id:d.id,...d.data()}));changed()},onErr);
  db.collection("rooms").onSnapshot(s=>{rooms=s.docs.map(d=>({id:d.id,...d.data()}));changed()},onErr);
  db.collection("decisions").onSnapshot(s=>{decisions={};s.docs.forEach(d=>decisions[d.id]=d.data());changed()},onErr);
@@ -579,36 +626,24 @@ function resList(title,arr,col,line,emptyTxt){
  return `<div class="panel"><h2>${title}</h2>${arr.length?arr.map((v,i)=>`<div class="item" style="animation-delay:${i*60}ms"><div>${line(v)}</div>
  <div><span class="pill ${v.active===false?"cancelled":"approved"}">${v.active===false?"ປິດໃຊ້ງານ":"ພ້ອມໃຊ້"}</span>${isAdmin?`<div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button class="sm" data-act="toggle" data-c="${col}" data-id="${v.id}">${v.active===false?"ເປີດໃຊ້ງານ":"ປິດໃຊ້ງານ"}</button><button class="sm no ${armed===col+v.id?"arm":""}" data-act="del" data-c="${col}" data-id="${v.id}">${armed===col+v.id?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button></div>`:""}</div></div>`).join(""):emptyIco(col==="rooms"?"room":"car",emptyTxt)}</div>`;
 }
-function adminsCount(){return Object.values(acctAll()).filter(x=>x.role==="admin").length}
-async function setRole(k){
- const a=acctAll()[k];if(!a)return;
+async function setRole(id){
+ const a=accounts.find(x=>x.id===id);if(!a)return;
  if(a.role==="admin"&&adminsCount()<=1)return toast("ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ");
- if(a.role==="admin"&&ADMIN_EMAILS.includes(a.email))return toast("ອີເມວນີ້ຖືກກຳນົດເປັນຜູ້ດູແລໄວ້ໃນລະບົບ");
  const next=a.role==="admin"?"user":"admin";
- try{await db.collection("accounts").doc(k).update({role:next})}catch(e){return toast("ປ່ຽນສິດບໍ່ສຳເລັດ")}
- if(a.email===myEmail){isAdmin=next==="admin";window.__local.setMe({isOwner:isAdmin,canEdit:isAdmin})}
+ try{await db.doc("profiles/"+id).update({role:next})}catch(e){return toast("ປ່ຽນສິດບໍ່ສຳເລັດ · ສະເພາະຜູ້ດູແລເທົ່ານັ້ນ")}
+ if(id===me.id){isAdmin=next==="admin";window.__sb.setMe({isOwner:isAdmin,canEdit:isAdmin})}
  armed=null;toast(next==="admin"?"ຕັ້ງເປັນຜູ້ດູແລແລ້ວ":"ປ່ຽນເປັນພະນັກງານແລ້ວ");updateTabs();render();
-}
-async function delAcct(k){
- const a=acctAll()[k];if(!a)return;
- if(a.email===myEmail)return toast("ລຶບບັນຊີຂອງຕົນເອງບໍ່ໄດ້");
- if(a.role==="admin"&&adminsCount()<=1)return toast("ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ");
- if(armed!=="u"+k){armed="u"+k;render();toast("ກົດອີກຄັ້ງເພື່ອລຶບບັນຊີ");return}
- armed=null;
- try{await db.collection("accounts").doc(k).delete();toast("ລຶບບັນຊີແລ້ວ")}catch(e){toast("ລຶບບໍ່ສຳເລັດ")}
- render();
 }
 function usersPanel(){
  if(!isAdmin)return "";
- const all=Object.entries(acctAll());
- return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດ ຫຼື ລຶບບັນຊີ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ</p>
- ${all.map(([k,a],i)=>`<div class="item" style="animation-delay:${i*60}ms">
-  <div><div class="t">${esc(a.name||a.email)}${a.email===myEmail?" (ທ່ານ)":""}</div><div class="m">${esc(a.email)}</div></div>
+ return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດຜູ້ໃຊ້ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ</p>
+ ${accounts.length?accounts.map((a,i)=>`<div class="item" style="animation-delay:${i*60}ms">
+  <div><div class="t">${esc(a.name||a.email)}${a.id===me.id?" (ທ່ານ)":""}</div><div class="m">${esc(a.email)}</div></div>
   <div><span class="pill ${a.role==="admin"?"approved":"pending"}">${a.role==="admin"?"ຜູ້ດູແລ":"ພະນັກງານ"}</span>
    <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
-    <button class="sm" data-u="role" data-k="${esc(k)}">${a.role==="admin"?"ປ່ຽນເປັນພະນັກງານ":"ຕັ້ງເປັນຜູ້ດູແລ"}</button>
-    <button class="sm no ${armed==="u"+k?"arm":""}" data-u="del" data-k="${esc(k)}">${armed==="u"+k?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button>
-   </div></div></div>`).join("")}</div>`;
+    <button class="sm" data-u="role" data-k="${esc(a.id)}">${a.role==="admin"?"ປ່ຽນເປັນພະນັກງານ":"ຕັ້ງເປັນຜູ້ດູແລ"}</button>
+   </div></div></div>`).join(""):`<div class="note">ຍັງບໍ່ມີຜູ້ໃຊ້</div>`}
+ <div class="note" style="text-align:left;margin-top:10px">ການລຶບບັນຊີຖາວອນ ຕ້ອງເຮັດຢູ່ໜ້າ Supabase (Authentication → Users) ເພື່ອຄວາມປອດໄພ</div></div>`;
 }
 function vRes(){
  const add=isAdmin?`<div class="panel"><h2>ເພີ່ມລົດ</h2>
@@ -623,7 +658,7 @@ function vRes(){
   resList("ລົດທັງໝົດ",vehicles,"vehicles",v=>`<div class="t">${esc(v.plate)}</div><div class="m">${esc(v.name||"")} · ${esc(v.seats||"?")} ບ່ອນນັ່ງ${v.note?" · "+esc(v.note):""}</div>`,isAdmin?"ຍັງບໍ່ມີລົດ ເພີ່ມຄັນທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີລົດ")+
   resList("ຫ້ອງປະຊຸມທັງໝົດ",rooms,"rooms",v=>`<div class="t">${esc(v.name)}</div><div class="m">${esc(v.capacity||"?")} ຄົນ${v.note?" · "+esc(v.note):""}</div>`,isAdmin?"ຍັງບໍ່ມີຫ້ອງ ເພີ່ມຫ້ອງທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມ")+
   usersPanel();
- $("#view").querySelectorAll("button[data-u]").forEach(b=>b.onclick=()=>b.dataset.u==="role"?setRole(b.dataset.k):delAcct(b.dataset.k));
+ $("#view").querySelectorAll("button[data-u]").forEach(b=>b.onclick=()=>setRole(b.dataset.k));
  const a=$("#addcar");if(a)a.onclick=addCar;const r=$("#addroom");if(r)r.onclick=addRoom;
  $("#view").querySelectorAll("button.sm[data-act]").forEach(b=>b.onclick=()=>{
   const col=b.dataset.c,id=b.dataset.id;
