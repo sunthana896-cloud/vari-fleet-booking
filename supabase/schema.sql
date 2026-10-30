@@ -20,6 +20,8 @@ create table if not exists public.vehicles (
   name       text not null default '',
   seats      text not null default '',
   note       text not null default '',
+  owner_name  text not null default '',
+  owner_phone text not null default '',
   active     boolean not null default true,
   created_at timestamptz not null default now()
 );
@@ -29,6 +31,7 @@ create table if not exists public.rooms (
   name       text not null,
   capacity   text not null default '',
   note       text not null default '',
+  notify_phone text not null default '',
   active     boolean not null default true,
   created_at timestamptz not null default now()
 );

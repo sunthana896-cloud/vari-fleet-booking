@@ -90,8 +90,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .glogo{display:block;height:60px;width:auto;margin:0 auto 10px;animation:pop .8s .2s both}
 .me{display:flex;align-items:center;gap:8px;font-size:13px}
 .me img{width:32px;height:32px;border-radius:50%}
-.strip{height:6px;border-radius:3px;background:var(--road);position:relative;overflow:hidden;margin-bottom:12px}
-.strip i{position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,var(--amber),transparent);animation:sweep 3.2s ease-in-out infinite}
+.wa{display:block;text-align:center;text-decoration:none;margin-top:10px;background:#25d366;color:#062b12;font-weight:700;padding:12px 18px;border-radius:12px}
+.wa:hover{filter:brightness(1.05)}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;position:relative;margin-bottom:14px}
 .tabs button{border:0;background:transparent;padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:500;color:var(--mut);transition:background .2s,color .2s,transform .15s}
 .tabs button:hover{background:var(--done);transform:translateY(-1px)}
@@ -162,7 +162,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
 @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes pop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--amber) 30%,transparent)}}
-@keyframes sweep{to{left:110%}}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 @keyframes conf{to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
@@ -274,7 +273,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
    <div class="me" id="meBox"></div>
   </div>
   <p class="sysname"><b>Vari Fleet &amp; Meeting</b> · ລະບົບຈອງນຳໃຊ້ລົດຫ້ອງການ ແລະ ຫ້ອງປະຊຸມ</p>
-  <div class="strip"><i></i></div>
   <div class="tabs" id="tabs"></div>
   <div id="view"></div>
  </div>
@@ -388,6 +386,9 @@ const ST={pending:"ລໍຖ້າອະນຸມັດ",approved:"ອະນຸ�
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const p2=n=>String(n).padStart(2,"0");
+const waNum=p=>{let d=String(p||"").replace(/\D/g,"");if(d.startsWith("00"))d=d.slice(2);else if(d.startsWith("0"))d="856"+d.slice(1);return d};
+const waLink=(p,t)=>"https://wa.me/"+waNum(p)+"?text="+encodeURIComponent(t);
+const waBox=(p,t,who)=>waNum(p)?`<a class="wa" target="_blank" rel="noopener" href="${waLink(p,t)}">ສົ່ງແຈ້ງເຕືອນທາງ WhatsApp ຫາ ${esc(who||"ຜູ້ຮັບຜິດຊອບ")}</a>`:`<div class="note" style="text-align:left;margin-top:8px">ຍັງບໍ່ໄດ້ຕັ້ງເບີ WhatsApp ສຳລັບລາຍການນີ້ (ຜູ້ດູແລຕັ້ງໄດ້ທີ່ແທັບ ຂໍ້ມູນລົດ ແລະ ຫ້ອງ)</div>`;
 const fmt=s=>{if(!s)return"";const[d,t]=s.split("T");const[y,m,dd]=d.split("-");return`${dd}/${m}/${y} ${t||""}`};
 const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
 
@@ -558,7 +559,9 @@ async function submitCar(){
  const c=clash(b.vehicleId,b.start,b.end);
  if(c)return bad(`ລົດຄັນນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#send").disabled=true;
- try{await db.collection("bookings").add(b);m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`;confetti();toast("ສົ່ງຄຳຂໍຈອງລົດສຳເລັດ");
+ try{await db.collection("bookings").add(b);const v=vOf(b.vehicleId)||{};
+  const wt=`ແຈ້ງຈອງລົດ\nລົດ: ${v.plate||""} ${v.name||""}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}${b.tel?"\nເບີໂທ: "+b.tel:""}\nເວລາ: ${fmt(b.start)} - ${fmt(b.end)}\nປາຍທາງ: ${b.dest}${b.pax?"\nຜູ້ໂດຍສານ: "+b.pax+" ຄົນ":""}${b.purpose?"\nຈຸດປະສົງ: "+b.purpose:""}\nສະຖານະ: ລໍຖ້າອະນຸມັດ`;
+  m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`+waBox(v.owner_phone,wt,v.owner_name);confetti();toast("ສົ່ງຄຳຂໍຈອງລົດສຳເລັດ");
   ["f_s","f_e","f_dep","f_tel","f_dest","f_pax","f_pur"].forEach(i=>$("#"+i).value="");$("#f_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
  $("#send").disabled=false;
@@ -590,7 +593,9 @@ async function submitRoom(){
  const c=rclash(b.roomId,b.start,b.end);
  if(c)return bad(`ຫ້ອງນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#rsend").disabled=true;
- try{await db.collection("roomBookings").add(b);m.innerHTML=`<div class="msg ok">ຈອງຫ້ອງສຳເລັດແລ້ວ</div>`;confetti();toast("ຈອງຫ້ອງປະຊຸມສຳເລັດ");
+ try{await db.collection("roomBookings").add(b);const rm=rOf(b.roomId)||{};
+  const wt=`ແຈ້ງຈອງຫ້ອງປະຊຸມ\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} - ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}`;
+  m.innerHTML=`<div class="msg ok">ຈອງຫ້ອງສຳເລັດແລ້ວ</div>`+waBox(rm.notify_phone,wt,"ຜູ້ດູແລຫ້ອງປະຊຸມ");confetti();toast("ຈອງຫ້ອງປະຊຸມສຳເລັດ");
   ["r_s","r_e","r_title","r_dep","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
  $("#rsend").disabled=false;
@@ -652,14 +657,23 @@ function vCal(){
 }
 
 /* ===== ຂໍ້ມູນລົດ ແລະ ຫ້ອງ ===== */
+const ownerF=()=>{const o={},n=$("#c_on").value.trim(),p=$("#c_op").value.trim();if(n)o.owner_name=n;if(p)o.owner_phone=p;return o};
+async function editPhone(col,id){
+ const car=col==="vehicles",v=(car?vehicles:rooms).find(x=>x.id===id);if(!v)return;
+ const ph=prompt((car?"ເບີ WhatsApp ຜູ້ຮັບຜິດຊອບລົດ":"ເບີ WhatsApp ຮັບແຈ້ງເຕືອນຫ້ອງປະຊຸມ")+" (ເຊັ່ນ 020 5555 5555)",(car?v.owner_phone:v.notify_phone)||"");
+ if(ph===null)return;
+ let o=car?{owner_phone:ph.trim()}:{notify_phone:ph.trim()};
+ if(car){const n=prompt("ຊື່ຜູ້ຮັບຜິດຊອບລົດ",v.owner_name||"");if(n!==null)o.owner_name=n.trim()}
+ try{await db.doc(col+"/"+id).update(o);toast("ບັນທຶກເບີແລ້ວ")}catch(e){toast("ບັນທຶກບໍ່ໄດ້ · ຍັງບໍ່ໄດ້ run SQL ເພີ່ມຄໍລຳ ຫຼື ບໍ່ມີສິດ")}
+}
 async function addCar(){
  const plate=$("#c_plate").value.trim();if(!plate)return toast("ກະລຸນາໃສ່ທະບຽນລົດ");
- try{await db.collection("vehicles").add({plate,name:$("#c_name").value.trim(),seats:$("#c_seats").value,note:$("#c_note").value.trim(),active:true});toast("ເພີ່ມລົດແລ້ວ")}
+ try{await db.collection("vehicles").add({plate,name:$("#c_name").value.trim(),seats:$("#c_seats").value,note:$("#c_note").value.trim(),active:true,...ownerF()});toast("ເພີ່ມລົດແລ້ວ")}
  catch(e){toast("ເພີ່ມບໍ່ໄດ້: ບໍ່ມີສິດຜູ້ດູແລ")}
 }
 async function addRoom(){
  const name=$("#m_name").value.trim();if(!name)return toast("ກະລຸນາໃສ່ຊື່ຫ້ອງ");
- try{await db.collection("rooms").add({name,capacity:$("#m_cap").value,note:$("#m_note").value.trim(),active:true});toast("ເພີ່ມຫ້ອງແລ້ວ")}
+ try{await db.collection("rooms").add({name,capacity:$("#m_cap").value,note:$("#m_note").value.trim(),active:true,...(($("#m_ph").value.trim())?{notify_phone:$("#m_ph").value.trim()}:{})});toast("ເພີ່ມຫ້ອງແລ້ວ")}
  catch(e){toast("ເພີ່ມບໍ່ໄດ້: ບໍ່ມີສິດຜູ້ດູແລ")}
 }
 async function toggleRes(col,arr,id){const v=arr.find(x=>x.id===id);try{await db.doc(col+"/"+id).update({active:v.active===false})}catch(e){toast("ບໍ່ມີສິດ")}}
@@ -675,7 +689,7 @@ async function delRes(col,id){
 }
 function resList(title,arr,col,line,emptyTxt){
  return `<div class="panel"><h2>${title}</h2>${arr.length?arr.map((v,i)=>`<div class="item" style="animation-delay:${i*60}ms"><div>${line(v)}</div>
- <div><span class="pill ${v.active===false?"cancelled":"approved"}">${v.active===false?"ປິດໃຊ້ງານ":"ພ້ອມໃຊ້"}</span>${isAdmin?`<div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button class="sm" data-act="toggle" data-c="${col}" data-id="${v.id}">${v.active===false?"ເປີດໃຊ້ງານ":"ປິດໃຊ້ງານ"}</button><button class="sm no ${armed===col+v.id?"arm":""}" data-act="del" data-c="${col}" data-id="${v.id}">${armed===col+v.id?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button></div>`:""}</div></div>`).join(""):emptyIco(col==="rooms"?"room":"car",emptyTxt)}</div>`;
+ <div><span class="pill ${v.active===false?"cancelled":"approved"}">${v.active===false?"ປິດໃຊ້ງານ":"ພ້ອມໃຊ້"}</span>${isAdmin?`<div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button class="sm" data-act="phone" data-c="${col}" data-id="${v.id}">ແກ້ເບີ WhatsApp</button><button class="sm" data-act="toggle" data-c="${col}" data-id="${v.id}">${v.active===false?"ເປີດໃຊ້ງານ":"ປິດໃຊ້ງານ"}</button><button class="sm no ${armed===col+v.id?"arm":""}" data-act="del" data-c="${col}" data-id="${v.id}">${armed===col+v.id?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button></div>`:""}</div></div>`).join(""):emptyIco(col==="rooms"?"room":"car",emptyTxt)}</div>`;
 }
 async function setRole(id){
  const a=accounts.find(x=>x.id===id);if(!a)return;
@@ -700,19 +714,22 @@ function vRes(){
  const add=isAdmin?`<div class="panel"><h2>ເພີ່ມລົດ</h2>
  <div class="grid2"><div><label for="c_plate">ທະບຽນ</label><input id="c_plate"></div><div><label for="c_name">ລຸ້ນ / ຊື່ລົດ</label><input id="c_name"></div></div>
  <div class="grid2"><div><label for="c_seats">ຈຳນວນບ່ອນນັ່ງ</label><input id="c_seats" type="number" min="1"></div><div><label for="c_note">ໝາຍເຫດ</label><input id="c_note"></div></div>
+ <div class="grid2"><div><label for="c_on">ຜູ້ຮັບຜິດຊອບລົດ</label><input id="c_on"></div><div><label for="c_op">ເບີ WhatsApp ຜູ້ຮັບຜິດຊອບ</label><input id="c_op" type="tel" inputmode="tel" placeholder="020 5555 5555"></div></div>
  <button class="btn" id="addcar">ເພີ່ມລົດ</button></div>
  <div class="panel"><h2>ເພີ່ມຫ້ອງປະຊຸມ</h2>
  <div class="grid2"><div><label for="m_name">ຊື່ຫ້ອງ</label><input id="m_name"></div><div><label for="m_cap">ຈຳນວນທີ່ຮອງຮັບ (ຄົນ)</label><input id="m_cap" type="number" min="1"></div></div>
  <label for="m_note">ອຸປະກອນໃນຫ້ອງ / ໝາຍເຫດ</label><input id="m_note">
+ <label for="m_ph">ເບີ WhatsApp ຮັບແຈ້ງເຕືອນການຈອງຫ້ອງ</label><input id="m_ph" type="tel" inputmode="tel" placeholder="020 5555 5555">
  <button class="btn" id="addroom">ເພີ່ມຫ້ອງ</button></div>`:`<div class="msg err" style="margin-bottom:14px">ສະເພາະຜູ້ດູແລທີ່ເພີ່ມ ຫຼື ປິດລົດ ແລະ ຫ້ອງໄດ້</div>`;
  $("#view").innerHTML=add+
-  resList("ລົດທັງໝົດ",vehicles,"vehicles",v=>`<div class="t">${esc(v.plate)}</div><div class="m">${esc(v.name||"")} · ${esc(v.seats||"?")} ບ່ອນນັ່ງ${v.note?" · "+esc(v.note):""}</div>`,isAdmin?"ຍັງບໍ່ມີລົດ ເພີ່ມຄັນທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີລົດ")+
-  resList("ຫ້ອງປະຊຸມທັງໝົດ",rooms,"rooms",v=>`<div class="t">${esc(v.name)}</div><div class="m">${esc(v.capacity||"?")} ຄົນ${v.note?" · "+esc(v.note):""}</div>`,isAdmin?"ຍັງບໍ່ມີຫ້ອງ ເພີ່ມຫ້ອງທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມ")+
+  resList("ລົດທັງໝົດ",vehicles,"vehicles",v=>`<div class="t">${esc(v.plate)}</div><div class="m">${esc(v.name||"")} · ${esc(v.seats||"?")} ບ່ອນນັ່ງ${v.note?" · "+esc(v.note):""}</div><div class="m">ຜູ້ຮັບຜິດຊອບ: ${v.owner_name||v.owner_phone?esc(v.owner_name||"")+(v.owner_phone?" · WhatsApp "+esc(v.owner_phone):""):"ຍັງບໍ່ໄດ້ຕັ້ງ"}</div>`,isAdmin?"ຍັງບໍ່ມີລົດ ເພີ່ມຄັນທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີລົດ")+
+  resList("ຫ້ອງປະຊຸມທັງໝົດ",rooms,"rooms",v=>`<div class="t">${esc(v.name)}</div><div class="m">${esc(v.capacity||"?")} ຄົນ${v.note?" · "+esc(v.note):""}</div><div class="m">ແຈ້ງເຕືອນ WhatsApp: ${v.notify_phone?esc(v.notify_phone):"ຍັງບໍ່ໄດ້ຕັ້ງ"}</div>`,isAdmin?"ຍັງບໍ່ມີຫ້ອງ ເພີ່ມຫ້ອງທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມ")+
   usersPanel();
  $("#view").querySelectorAll("button[data-u]").forEach(b=>b.onclick=()=>setRole(b.dataset.k));
  const a=$("#addcar");if(a)a.onclick=addCar;const r=$("#addroom");if(r)r.onclick=addRoom;
  $("#view").querySelectorAll("button.sm[data-act]").forEach(b=>b.onclick=()=>{
   const col=b.dataset.c,id=b.dataset.id;
+  if(b.dataset.act==="phone")return editPhone(col,id);
   if(b.dataset.act==="del")return delRes(col,id);
   armed=null;toggleRes(col,col==="rooms"?rooms:vehicles,id)});
 }
