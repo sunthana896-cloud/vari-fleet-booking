@@ -73,7 +73,7 @@ create table if not exists public.room_bookings (
 
 -- ---------- 5. ການອະນຸມັດ (1 ການຈອງ = 1 ການຕັດສິນ) ----------
 create table if not exists public.decisions (
-  booking_id uuid primary key references public.bookings(id) on delete cascade,
+  booking_id uuid primary key,  -- ໃຊ້ໄດ້ທັງ bookings ແລະ room_bookings
   status     text not null check (status in ('approved','rejected')),
   decided_by uuid references auth.users(id) on delete set null,
   decided_at timestamptz not null default now()

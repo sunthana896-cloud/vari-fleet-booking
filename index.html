@@ -428,7 +428,7 @@ const rOf=id=>rooms.find(v=>v.id===id);
 const nameOf=uid=>(profs[uid]&&profs[uid].name)||"ຜູ້ໃຊ້";
 const bookerOf=b=>(b&&b.booker&&String(b.booker).trim())||nameOf(b&&b.uid);
 function clash(vid,s,e,skip){return bookings.find(b=>b.id!==skip&&b.vehicleId===vid&&["pending","approved"].includes(statusOf(b))&&s<b.end&&e>b.start)}
-function rclash(rid,s,e,skip){return rbookings.find(b=>b.id!==skip&&b.roomId===rid&&!b.cancelled&&s<b.end&&e>b.start)}
+function rclash(rid,s,e,skip){return rbookings.find(b=>b.id!==skip&&b.roomId===rid&&["pending","approved"].includes(statusOf(b))&&s<b.end&&e>b.start)}
 
 /* ===== ລະຫັດຜ່ານ (PBKDF2, ເກັບສ່ວນຕົວຂອງແຕ່ລະຄົນ) ===== */
 const enc=new TextEncoder();
@@ -543,7 +543,7 @@ function setMenu(o){document.body.classList.toggle("menu",o);const m=$("#menuBtn
 document.addEventListener("click",e=>{if(e.target.closest("#menuBtn"))setMenu(!document.body.classList.contains("menu"));else if(e.target.id==="scrim")setMenu(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")setMenu(false)});
 function updateTabs(){
- const pend=bookings.filter(b=>statusOf(b)==="pending").length;
+ const pend=[...bookings,...rbookings].filter(b=>statusOf(b)==="pending").length;
  const list=[["car","ຈອງລົດ"],["room","ຈອງຫ້ອງປະຊຸມ"],["list","ລາຍການຈອງ"+(isAdmin&&pend?`<span class="badge">${pend}</span>`:"")],["cal","ຕາຕະລາງ"],["res","ຂໍ້ມູນລົດ ແລະ ຫ້ອງ"]];
  $("#tabs").innerHTML=list.map(([k,n])=>`<button class="${k===tab?"on":""}" data-t="${k}">${n}</button>`).join("");
  $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;armed=null;setMenu(false);render();window.scrollTo(0,0)});
@@ -575,7 +575,7 @@ function carReqText(b,bid){const v=vOf(b.vehicleId)||{};
 function carResText(b,ok){const v=vOf(b.vehicleId)||{};
  return`ສະບາຍດີ ທ່ານ ${b.booker} ຂໍຮຽນແຈ້ງຜົນຄຳຂໍຈອງລົດຫ້ອງການ:\n\nລົດ: ${v.plate||""} ${v.name||""}\nເວລາໃຊ້ລົດ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\nປາຍທາງ: ${b.dest}\n\nຜົນ: ${ok?"ອະນຸມັດແລ້ວ ສາມາດໃຊ້ລົດໄດ້ຕາມເວລາທີ່ຈອງ":"ຂໍອະໄພ ບໍ່ໄດ້ຮັບການອະນຸມັດ"}\n\nຂອບໃຈຫຼາຍໆ`}
 function roomText(b){const rm=rOf(b.roomId)||{};
- return`ສະບາຍດີ ຂໍຮຽນແຈ້ງການຈອງຫ້ອງປະຊຸມ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nການຈອງນີ້ສຳເລັດແລ້ວ ບໍ່ຕ້ອງອະນຸມັດ. ຂອບໃຈຫຼາຍໆ`}
+ return`ສະບາຍດີ ຂໍຮຽນແຈ້ງຄຳຂໍຈອງຫ້ອງປະຊຸມ ເພື່ອພິຈາລະນາອະນຸມັດ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nກະລຸນາກົດລິ້ງລຸ່ມນີ້ ເພື່ອອະນຸມັດ ຫຼື ບໍ່ອະນຸມັດ:\n${APP_URL}?approve=${b.id}\n\nຂອບໃຈຫຼາຍໆ`}
 /* ປຸ່ມ WhatsApp ໃນລາຍການ: ລໍຖ້າ → ຜູ້ຮັບຜິດຊອບລົດ, ອະນຸມັດ/ປະຕິເສດ → ຜູ້ຈອງ, ຫ້ອງ → ເບີແຈ້ງເຕືອນຫ້ອງ */
 function waBtn(r){
  if(r.s==="cancelled")return"";
@@ -583,7 +583,7 @@ function waBtn(r){
  if(r.kind==="car"){const b=bookings.find(x=>x.id===r.id);if(!b)return"";
   if(r.s==="pending"){ph=(vOf(b.vehicleId)||{}).owner_phone;tx=carReqText(b,b.id);lb="ແຈ້ງຜູ້ອະນຸມັດ"}
   else{ph=b.tel;tx=carResText(b,r.s==="approved");lb="ແຈ້ງຜູ້ຈອງ"}}
- else{const b=rbookings.find(x=>x.id===r.id);if(!b)return"";ph=(rOf(b.roomId)||{}).notify_phone;tx=roomText(b);lb="ແຈ້ງຜູ້ດູແລຫ້ອງ"}
+ else{if(r.s!=="pending")return"";const b=rbookings.find(x=>x.id===r.id);if(!b)return"";ph=(rOf(b.roomId)||{}).notify_phone;tx=roomText(b);lb="ແຈ້ງຜູ້ອະນຸມັດ"}
  return waNum(ph)?`<a class="sm wa-sm" target="_blank" rel="noopener" href="${waLink(ph,tx)}">${lb}</a>`:`<button class="sm wa-sm" data-a="nowa" data-id="">${lb}</button>`}
 async function submitCar(){
  const g=i=>$("#"+i).value.trim(),m=$("#msg");
@@ -607,7 +607,7 @@ async function submitCar(){
 const roomOpt=r=>`<option value="${esc(r.id)}">${esc(r.name)} (${esc(r.capacity||"?")} ຄົນ)</option>`;
 function vRoom(){
  const has=rooms.some(r=>r.active!==false);
- $("#view").innerHTML=`<div class="panel"><h2>ຈອງຫ້ອງປະຊຸມ</h2><p class="sub">ຈອງໄດ້ທັນທີ ຖ້າຫ້ອງວ່າງ (ບໍ່ຕ້ອງລໍຖ້າອະນຸມັດ) · ແກ້ຊື່ຜູ້ຈອງໄດ້ ຖ້າຈອງແທນຄົນອື່ນ</p>
+ $("#view").innerHTML=`<div class="panel"><h2>ຈອງຫ້ອງປະຊຸມ</h2><p class="sub">ສົ່ງແລ້ວຈະລໍຖ້າຜູ້ດູແລອະນຸມັດ · ແກ້ຊື່ຜູ້ຈອງໄດ້ ຖ້າຈອງແທນຄົນອື່ນ</p>
  <div id="noRoom" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີຫ້ອງປະຊຸມໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມຫ້ອງທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
  <label for="r_room">ເລືອກຫ້ອງ</label><select id="r_room">${rooms.filter(r=>r.active!==false).map(roomOpt).join("")}</select>
  <div class="grid2"><div><label for="r_s">ເລີ່ມ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_s" type="datetime-local"></div><div><label for="r_e">ສິ້ນສຸດ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_e" type="datetime-local"></div></div>
@@ -629,9 +629,9 @@ async function submitRoom(){
  const c=rclash(b.roomId,b.start,b.end);
  if(c)return bad(`ຫ້ອງນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#rsend").disabled=true;
- try{await db.collection("roomBookings").add(b);const rm=rOf(b.roomId)||{};
+ try{b.id=(await db.collection("roomBookings").add(b)).id;const rm=rOf(b.roomId)||{};
   const wt=roomText(b);
-  m.innerHTML=`<div class="msg ok">ຈອງຫ້ອງສຳເລັດແລ້ວ</div>`+waBox(rm.notify_phone,wt,"ຜູ້ດູແລຫ້ອງປະຊຸມ");confetti();toast("ຈອງຫ້ອງປະຊຸມສຳເລັດ");
+  m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`+waBox(rm.notify_phone,wt,"ຜູ້ດູແລຫ້ອງປະຊຸມ");confetti();toast("ສົ່ງຄຳຂໍຈອງຫ້ອງສຳເລັດ");
   ["r_s","r_e","r_title","r_dep","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
  $("#rsend").disabled=false;
@@ -639,7 +639,7 @@ async function submitRoom(){
 
 /* ===== ລາຍການຈອງ ===== */
 async function decide(id,status){
- if(status==="approved"){const b=bookings.find(x=>x.id===id);const c=b&&clash(b.vehicleId,b.start,b.end,id);if(c&&statusOf(c)==="approved")return toast("ຊ້ອນກັບການຈອງທີ່ອະນຸມັດແລ້ວ")}
+ if(status==="approved"){const rb=rbookings.find(x=>x.id===id),b=rb||bookings.find(x=>x.id===id);const c=b&&(rb?rclash(b.roomId,b.start,b.end,id):clash(b.vehicleId,b.start,b.end,id));if(c&&statusOf(c)==="approved")return toast("ຊ້ອນກັບການຈອງທີ່ອະນຸມັດແລ້ວ")}
  try{await db.doc("decisions/"+id).set({status,by:me.id,at:new Date().toISOString()});toast(status==="approved"?"ອະນຸມັດແລ້ວ":"ບໍ່ອະນຸມັດ");if(status==="approved")confetti()}
  catch(e){toast("ບໍ່ມີສິດອະນຸມັດ")}
 }
@@ -651,18 +651,18 @@ async function cancelB(kind,id){
 function items(){
  const a=bookings.map(b=>{const v=vOf(b.vehicleId);return{kind:"car",id:b.id,uid:b.uid,booker:b.booker,start:b.start,end:b.end,s:statusOf(b),
   title:(v?v.plate:"(ລົດຖືກລຶບ)")+" · "+b.dest,meta:[b.dep,b.tel,b.pax?b.pax+" ຄົນ":""].filter(Boolean).join(" · "),note:b.purpose}});
- const r=rbookings.map(b=>{const x=rOf(b.roomId);return{kind:"room",id:b.id,uid:b.uid,booker:b.booker,start:b.start,end:b.end,s:b.cancelled?"cancelled":"approved",
+ const r=rbookings.map(b=>{const x=rOf(b.roomId);return{kind:"room",id:b.id,uid:b.uid,booker:b.booker,start:b.start,end:b.end,s:statusOf(b),
   title:(x?x.name:"(ຫ້ອງຖືກລຶບ)")+" · "+b.title,meta:[b.dep,b.pax?b.pax+" ຄົນ":""].filter(Boolean).join(" · "),note:b.note}});
  return[...a,...r].sort((p,q)=>q.start.localeCompare(p.start));
 }
 function focusCard(){
  if(!focusId)return"";
- const b=items().find(x=>x.kind==="car"&&x.id===focusId);
+ const b=items().find(x=>x.id===focusId);
  const close=`<button class="sm" data-a="fx" data-id="">ປິດ</button>`;
  if(!b)return`<div class="item" style="border:2px solid var(--amber);margin-bottom:14px"><div class="m">ກຳລັງໂຫຼດຂໍ້ມູນການຈອງ... ຫຼື ບໍ່ພົບການຈອງນີ້</div><div>${close}</div></div>`;
  let act="";
  if(b.s==="pending")act=isAdmin?`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`:`<div class="m">ຕ້ອງເປັນຜູ້ດູແລເທົ່ານັ້ນຈຶ່ງອະນຸມັດໄດ້</div>`;
- return`<div class="item" style="border:2px solid var(--amber);margin-bottom:14px"><div><div class="t"><span class="kind">ລົດ</span>${esc(b.title)}</div>
+ return`<div class="item" style="border:2px solid var(--amber);margin-bottom:14px"><div><div class="t"><span class="kind">${b.kind==="car"?"ລົດ":"ຫ້ອງ"}</span>${esc(b.title)}</div>
   <div class="m num">${fmt(b.start)} – ${fmt(b.end)}</div>
   <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
   <div><span class="pill ${b.s}">${ST[b.s]}</span><div style="margin-top:6px">${act}${close}</div></div></div>`}
@@ -675,10 +675,10 @@ function vList(){
  const chips=[["all","ທັງໝົດ"],["car","ລົດ"],["room","ຫ້ອງປະຊຸມ"],["mine","ຂອງຂ້ອຍ"],["pending","ລໍຖ້າອະນຸມັດ"]].map(([k,n])=>`<button class="chip ${filter===k?"on":""}" data-f="${k}">${n}</button>`).join("");
  $("#view").innerHTML=`<div class="panel"><h2>ລາຍການຈອງ</h2>${focusCard()}<div class="chips">${chips}</div>${rows.length?rows.map((b,i)=>{
   const mine=b.uid===me.id,key=b.kind+b.id;let act="";
-  if(isAdmin&&b.kind==="car"&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
+  if(isAdmin&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
   if((mine||isAdmin)&&["pending","approved"].includes(b.s))act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
   act+=waBtn(b);
-  const lbl=b.kind==="room"&&b.s==="approved"?"ຈອງສຳເລັດ":ST[b.s];
+  const lbl=ST[b.s];
   return `<div class="item" style="animation-delay:${Math.min(i,10)*50}ms"><div><div class="t"><span class="kind">${b.kind==="car"?"ລົດ":"ຫ້ອງ"}</span>${esc(b.title)}</div>
    <div class="m num">${fmt(b.start)} – ${fmt(b.end)}</div>
    <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
@@ -695,9 +695,9 @@ function vCal(){
  const chips=[["car","ລົດ"],["room","ຫ້ອງປະຊຸມ"]].map(([k,n])=>`<button class="chip ${calKind===k?"on":""}" data-k="${k}">${n}</button>`).join("");
  $("#view").innerHTML=`<div class="panel"><h2>ຕາຕະລາງລາຍວັນ</h2><div class="chips">${chips}</div><label for="d">ເລືອກວັນທີ</label><input id="d" class="datepick" type="date" value="${calDay}">
  ${res.length?res.map(v=>{
-  const bs=(car?bookings.filter(b=>b.vehicleId===v.id&&["pending","approved"].includes(statusOf(b))):rbookings.filter(b=>b.roomId===v.id&&!b.cancelled)).filter(b=>b.start<=e&&b.end>=s).sort((a,b)=>a.start.localeCompare(b.start));
+  const bs=(car?bookings.filter(b=>b.vehicleId===v.id&&["pending","approved"].includes(statusOf(b))):rbookings.filter(b=>b.roomId===v.id&&["pending","approved"].includes(statusOf(b)))).filter(b=>b.start<=e&&b.end>=s).sort((a,b)=>a.start.localeCompare(b.start));
   const blocks=bs.map((b,i)=>{const st=b.start.slice(0,10)<calDay?0:toMin(b.start.slice(11,16));const en=b.end.slice(0,10)>calDay?1440:toMin(b.end.slice(11,16));
-   const sx=car?statusOf(b):"approved";const lab=car?bookerOf(b):b.title;
+   const sx=statusOf(b);const lab=car?bookerOf(b):b.title;
    return `<div class="blk ${sx}" style="left:${st/14.4}%;width:${Math.max((en-st)/14.4,2)}%;animation-delay:${i*120}ms" title="${esc(lab)} · ${esc(bookerOf(b))} ${fmt(b.start)}–${fmt(b.end)}">${esc(lab)}</div>`}).join("");
   return `<div class="row"><div class="h"><span>${esc(car?v.plate:v.name)} <small style="font-weight:400;color:var(--mut)">${esc(car?(v.name||""):(v.capacity?v.capacity+" ຄົນ":""))}</small></span>${bs.length?"":'<span class="free">ຫວ່າງທັງມື້</span>'}</div><div class="bar">${blocks}</div><div class="hours num"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div></div>`}).join(""):emptyIco(car?"car":"room",car?"ຍັງບໍ່ມີລົດໃນລະບົບ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມໃນລະບົບ")}</div>`;
  $("#d").onchange=ev=>{calDay=ev.target.value||today();vCal()};
