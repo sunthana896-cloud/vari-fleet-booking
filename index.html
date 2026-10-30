@@ -64,6 +64,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .who{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px;animation:rise .5s .1s both}
 .who img{width:44px;height:44px;border-radius:50%}
 .who b{display:block}.who small{color:var(--mut);word-break:break-all}
+.fmt{font-weight:400;font-size:11px;opacity:.65;white-space:nowrap}
 .role{display:inline-block;font-size:12px;font-weight:700;padding:1px 10px;border-radius:99px;margin-top:2px}
 .role.admin{background:var(--amber);color:#2a1c00}.role.user{background:var(--done);color:var(--mut)}
 .dots::after{content:"";animation:dots 1.2s steps(4) infinite}
@@ -102,7 +103,15 @@ button,input,select,textarea{font:inherit;color:inherit}
 .panel h2{margin:0 0 6px;font-size:18px}
 .sub{color:var(--mut);margin:0 0 6px;font-size:14px}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
-input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);transition:border-color .2s,box-shadow .2s}
+input,select,textarea{width:100%;min-width:0;max-width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);transition:border-color .2s,box-shadow .2s}
+.grid2>*{min-width:0}
+.panel,.item,.lf,.pww{min-width:0}
+/* iOS: ບັງຄັບຊ່ອງວັນທີໃຫ້ຢູ່ໃນກອບ ແລະ ສູງເທົ່າຊ່ອງອື່ນ */
+input[type=date],input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;text-align:left;line-height:1.3}
+input[type=date]::-webkit-date-and-time-value,
+input[type=datetime-local]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:1.3em}
+input[type=date]::-webkit-calendar-picker-indicator,
+input[type=datetime-local]::-webkit-calendar-picker-indicator{margin-inline-start:auto;opacity:.6}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 25%,transparent)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:560px){.grid2{grid-template-columns:1fr}}
@@ -191,7 +200,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
 
  /* ຊ່ອງຂຽນ: 16px ກັນ iOS ຊູມເອງເວລາກົດ */
  input,select,textarea{font-size:16px;padding:12px}
- input[type=datetime-local]{min-height:48px}
+ input[type=date],input[type=datetime-local]{min-height:48px;padding-block:13px}
  label{margin-top:12px}
 
  /* ປຸ່ມໃຫຍ່ ກົດງ່າຍ */
@@ -531,7 +540,7 @@ function vCar(){
  $("#view").innerHTML=`<div class="panel"><h2>ຈອງລົດຫ້ອງການ</h2><p class="sub">ສົ່ງແລ້ວຈະລໍຖ້າຜູ້ດູແລອະນຸມັດ · ແກ້ຊື່ຜູ້ຈອງໄດ້ ຖ້າຈອງແທນຄົນອື່ນ</p>
  <div id="noCar" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີລົດໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມລົດທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
  <label for="f_veh">ເລືອກລົດ</label><select id="f_veh">${vehicles.filter(v=>v.active!==false).map(vehOpt).join("")}</select>
- <div class="grid2"><div><label for="f_s">ເລີ່ມໃຊ້</label><input id="f_s" type="datetime-local"></div><div><label for="f_e">ຄືນລົດ</label><input id="f_e" type="datetime-local"></div></div>
+ <div class="grid2"><div><label for="f_s">ເລີ່ມໃຊ້ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="f_s" type="datetime-local"></div><div><label for="f_e">ຄືນລົດ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="f_e" type="datetime-local"></div></div>
  <div class="grid2"><div><label for="f_who">ຊື່ຜູ້ຈອງ</label><input id="f_who" value="${esc(me.name||"")}"></div><div><label for="f_dep">ພະແນກ</label><input id="f_dep"></div></div>
  <div class="grid2"><div><label for="f_tel">ເບີໂທຕິດຕໍ່</label><input id="f_tel" inputmode="tel"></div><div><label for="f_pax">ຈຳນວນຜູ້ໂດຍສານ</label><input id="f_pax" type="number" min="1"></div></div>
  <label for="f_dest">ປາຍທາງ</label><input id="f_dest">
@@ -562,7 +571,7 @@ function vRoom(){
  $("#view").innerHTML=`<div class="panel"><h2>ຈອງຫ້ອງປະຊຸມ</h2><p class="sub">ຈອງໄດ້ທັນທີ ຖ້າຫ້ອງວ່າງ (ບໍ່ຕ້ອງລໍຖ້າອະນຸມັດ) · ແກ້ຊື່ຜູ້ຈອງໄດ້ ຖ້າຈອງແທນຄົນອື່ນ</p>
  <div id="noRoom" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີຫ້ອງປະຊຸມໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມຫ້ອງທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
  <label for="r_room">ເລືອກຫ້ອງ</label><select id="r_room">${rooms.filter(r=>r.active!==false).map(roomOpt).join("")}</select>
- <div class="grid2"><div><label for="r_s">ເລີ່ມ</label><input id="r_s" type="datetime-local"></div><div><label for="r_e">ສິ້ນສຸດ</label><input id="r_e" type="datetime-local"></div></div>
+ <div class="grid2"><div><label for="r_s">ເລີ່ມ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_s" type="datetime-local"></div><div><label for="r_e">ສິ້ນສຸດ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_e" type="datetime-local"></div></div>
  <label for="r_title">ຫົວຂໍ້ການປະຊຸມ</label><input id="r_title">
  <div class="grid2"><div><label for="r_who">ຊື່ຜູ້ຈອງ</label><input id="r_who" value="${esc(me.name||"")}"></div><div><label for="r_dep">ພະແນກ</label><input id="r_dep"></div></div>
  <label for="r_pax">ຈຳນວນຜູ້ເຂົ້າຮ່ວມ</label><input id="r_pax" type="number" min="1">
