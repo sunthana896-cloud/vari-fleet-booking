@@ -121,6 +121,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 .sm{border:1px solid var(--line);background:transparent;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer;margin:2px 4px 2px 0;transition:background .15s,transform .15s}
 .sm:hover{background:var(--done);transform:translateY(-1px)}
+.sm.wa-sm{display:inline-block;text-decoration:none;border-color:#25d366;color:#25d366;line-height:1.4}
 .sm.go{border-color:var(--ok);color:var(--ok)}.sm.no{border-color:var(--bad);color:var(--bad)}.sm.arm{background:var(--bad);color:#fff;border-color:var(--bad)}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 .chip{border:1px solid var(--line);background:transparent;padding:4px 14px;border-radius:99px;cursor:pointer;font-size:13px;transition:all .2s}
@@ -551,6 +552,21 @@ function vCar(){
  <button class="btn" id="send">ສົ່ງຄຳຂໍຈອງລົດ</button><div id="msg"></div></div>`;
  $("#send").onclick=submitCar;
 }
+function carReqText(b,bid){const v=vOf(b.vehicleId)||{};
+ return`ສະບາຍດີ${v.owner_name?" ທ່ານ "+v.owner_name:""} ຂໍຮຽນແຈ້ງຄຳຂໍຈອງລົດຫ້ອງການ ເພື່ອພິຈາລະນາອະນຸມັດ ດັ່ງນີ້:\n\nລົດ: ${v.plate||""} ${v.name||""}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}${b.tel?"\nເບີໂທຕິດຕໍ່: "+b.tel:""}\nເວລາໃຊ້ລົດ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\nປາຍທາງ: ${b.dest}${b.pax?"\nຜູ້ໂດຍສານ: "+b.pax+" ຄົນ":""}${b.purpose?"\nຈຸດປະສົງ: "+b.purpose:""}\n\nກະລຸນາກົດລິ້ງລຸ່ມນີ້ ເພື່ອອະນຸມັດ ຫຼື ບໍ່ອະນຸມັດ:\n${APP_URL}?approve=${bid}\n\nຂອບໃຈຫຼາຍໆ`}
+function carResText(b,ok){const v=vOf(b.vehicleId)||{};
+ return`ສະບາຍດີ ທ່ານ ${b.booker} ຂໍຮຽນແຈ້ງຜົນຄຳຂໍຈອງລົດຫ້ອງການ:\n\nລົດ: ${v.plate||""} ${v.name||""}\nເວລາໃຊ້ລົດ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\nປາຍທາງ: ${b.dest}\n\nຜົນ: ${ok?"ອະນຸມັດແລ້ວ ສາມາດໃຊ້ລົດໄດ້ຕາມເວລາທີ່ຈອງ":"ຂໍອະໄພ ບໍ່ໄດ້ຮັບການອະນຸມັດ"}\n\nຂອບໃຈຫຼາຍໆ`}
+function roomText(b){const rm=rOf(b.roomId)||{};
+ return`ສະບາຍດີ ຂໍຮຽນແຈ້ງການຈອງຫ້ອງປະຊຸມ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nການຈອງນີ້ສຳເລັດແລ້ວ ບໍ່ຕ້ອງອະນຸມັດ. ຂອບໃຈຫຼາຍໆ`}
+/* ປຸ່ມ WhatsApp ໃນລາຍການ: ລໍຖ້າ → ຜູ້ຮັບຜິດຊອບລົດ, ອະນຸມັດ/ປະຕິເສດ → ຜູ້ຈອງ, ຫ້ອງ → ເບີແຈ້ງເຕືອນຫ້ອງ */
+function waBtn(r){
+ if(r.s==="cancelled")return"";
+ let ph="",tx="",lb="WhatsApp";
+ if(r.kind==="car"){const b=bookings.find(x=>x.id===r.id);if(!b)return"";
+  if(r.s==="pending"){ph=(vOf(b.vehicleId)||{}).owner_phone;tx=carReqText(b,b.id);lb="ແຈ້ງຜູ້ອະນຸມັດ"}
+  else{ph=b.tel;tx=carResText(b,r.s==="approved");lb="ແຈ້ງຜູ້ຈອງ"}}
+ else{const b=rbookings.find(x=>x.id===r.id);if(!b)return"";ph=(rOf(b.roomId)||{}).notify_phone;tx=roomText(b);lb="ແຈ້ງຜູ້ດູແລຫ້ອງ"}
+ return waNum(ph)?`<a class="sm wa-sm" target="_blank" rel="noopener" href="${waLink(ph,tx)}">${lb}</a>`:`<button class="sm wa-sm" data-a="nowa" data-id="">${lb}</button>`}
 async function submitCar(){
  const g=i=>$("#"+i).value.trim(),m=$("#msg");
  const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`};
@@ -562,7 +578,7 @@ async function submitCar(){
  if(c)return bad(`ລົດຄັນນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#send").disabled=true;
  try{const bid=(await db.collection("bookings").add(b)).id;const v=vOf(b.vehicleId)||{};
-  const wt=`ສະບາຍດີ${v.owner_name?" ທ່ານ "+v.owner_name:""} ຂໍຮຽນແຈ້ງຄຳຂໍຈອງລົດຫ້ອງການ ເພື່ອພິຈາລະນາອະນຸມັດ ດັ່ງນີ້:\n\nລົດ: ${v.plate||""} ${v.name||""}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}${b.tel?"\nເບີໂທຕິດຕໍ່: "+b.tel:""}\nເວລາໃຊ້ລົດ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\nປາຍທາງ: ${b.dest}${b.pax?"\nຜູ້ໂດຍສານ: "+b.pax+" ຄົນ":""}${b.purpose?"\nຈຸດປະສົງ: "+b.purpose:""}\n\nກະລຸນາກົດລິ້ງລຸ່ມນີ້ ເພື່ອອະນຸມັດ ຫຼື ບໍ່ອະນຸມັດ:\n${APP_URL}?approve=${bid}\n\nຂອບໃຈຫຼາຍໆ`;
+  const wt=carReqText(b,bid);
   m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`+waBox(v.owner_phone,wt,v.owner_name);confetti();toast("ສົ່ງຄຳຂໍຈອງລົດສຳເລັດ");
   ["f_s","f_e","f_dep","f_tel","f_dest","f_pax","f_pur"].forEach(i=>$("#"+i).value="");$("#f_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
@@ -596,7 +612,7 @@ async function submitRoom(){
  if(c)return bad(`ຫ້ອງນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#rsend").disabled=true;
  try{await db.collection("roomBookings").add(b);const rm=rOf(b.roomId)||{};
-  const wt=`ສະບາຍດີ ຂໍຮຽນແຈ້ງການຈອງຫ້ອງປະຊຸມ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nການຈອງນີ້ສຳເລັດແລ້ວ ບໍ່ຕ້ອງອະນຸມັດ. ຂອບໃຈຫຼາຍໆ`;
+  const wt=roomText(b);
   m.innerHTML=`<div class="msg ok">ຈອງຫ້ອງສຳເລັດແລ້ວ</div>`+waBox(rm.notify_phone,wt,"ຜູ້ດູແລຫ້ອງປະຊຸມ");confetti();toast("ຈອງຫ້ອງປະຊຸມສຳເລັດ");
   ["r_s","r_e","r_title","r_dep","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
@@ -643,13 +659,14 @@ function vList(){
   const mine=b.uid===me.id,key=b.kind+b.id;let act="";
   if(isAdmin&&b.kind==="car"&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
   if((mine||isAdmin)&&["pending","approved"].includes(b.s))act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
+  act+=waBtn(b);
   const lbl=b.kind==="room"&&b.s==="approved"?"ຈອງສຳເລັດ":ST[b.s];
   return `<div class="item" style="animation-delay:${Math.min(i,10)*50}ms"><div><div class="t"><span class="kind">${b.kind==="car"?"ລົດ":"ຫ້ອງ"}</span>${esc(b.title)}</div>
    <div class="m num">${fmt(b.start)} – ${fmt(b.end)}</div>
    <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
    <div><span class="pill ${b.s}">${lbl}</span><div style="margin-top:6px">${act}</div></div></div>`}).join(""):emptyIco(filter==="room"?"room":filter==="car"?"car":"cal","ຍັງບໍ່ມີລາຍການຈອງ")}</div>`;
  $("#view").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filter=c.dataset.f;render()});
- $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="fx"?(focusId=null,history.replaceState(null,"",location.pathname),render()):a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
+ $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="nowa"?toast("ຍັງບໍ່ໄດ້ຕັ້ງເບີ WhatsApp (ຕັ້ງທີ່ແທັບ ຂໍ້ມູນລົດ ແລະ ຫ້ອງ ຫຼື ເບີຜູ້ຈອງຫວ່າງ)"):a==="fx"?(focusId=null,history.replaceState(null,"",location.pathname),render()):a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
 }
 
 /* ===== ຕາຕະລາງລາຍວັນ (ລົດ / ຫ້ອງ) ===== */
