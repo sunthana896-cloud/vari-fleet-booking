@@ -67,6 +67,7 @@ create table if not exists public.room_bookings (
   dep        text not null default '',
   pax        text not null default '',
   note       text not null default '',
+  tel        text not null default '',
   cancelled  boolean not null default false,
   created_at timestamptz not null default now()
 );

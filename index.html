@@ -169,6 +169,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 
+#waPop{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.wp-box{width:100%;max-width:380px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:20px;animation:rise .3s both}
+.wp-box b{font-size:17px}.wp-box p{margin:6px 0 4px}
 /* ===== Sidebar ===== */
 body.inapp{padding-inline:0}
 .shell{display:flex;min-height:100vh}
@@ -575,7 +578,20 @@ function carReqText(b,bid){const v=vOf(b.vehicleId)||{};
 function carResText(b,ok){const v=vOf(b.vehicleId)||{};
  return`ສະບາຍດີ ທ່ານ ${b.booker} ຂໍຮຽນແຈ້ງຜົນຄຳຂໍຈອງລົດຫ້ອງການ:\n\nລົດ: ${v.plate||""} ${v.name||""}\nເວລາໃຊ້ລົດ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\nປາຍທາງ: ${b.dest}\n\nຜົນ: ${ok?"ອະນຸມັດແລ້ວ ສາມາດໃຊ້ລົດໄດ້ຕາມເວລາທີ່ຈອງ":"ຂໍອະໄພ ບໍ່ໄດ້ຮັບການອະນຸມັດ"}\n\nຂອບໃຈຫຼາຍໆ`}
 function roomText(b){const rm=rOf(b.roomId)||{};
- return`ສະບາຍດີ ຂໍຮຽນແຈ້ງຄຳຂໍຈອງຫ້ອງປະຊຸມ ເພື່ອພິຈາລະນາອະນຸມັດ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nກະລຸນາກົດລິ້ງລຸ່ມນີ້ ເພື່ອອະນຸມັດ ຫຼື ບໍ່ອະນຸມັດ:\n${APP_URL}?approve=${b.id}\n\nຂອບໃຈຫຼາຍໆ`}
+ return`ສະບາຍດີ ຂໍຮຽນແຈ້ງຄຳຂໍຈອງຫ້ອງປະຊຸມ ເພື່ອພິຈາລະນາອະນຸມັດ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}${b.tel?"\nເບີໂທຕິດຕໍ່: "+b.tel:""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nກະລຸນາກົດລິ້ງລຸ່ມນີ້ ເພື່ອອະນຸມັດ ຫຼື ບໍ່ອະນຸມັດ:\n${APP_URL}?approve=${b.id}\n\nຂອບໃຈຫຼາຍໆ`}
+function roomResText(b,ok){const rm=rOf(b.roomId)||{};
+ return`ສະບາຍດີ ທ່ານ ${b.booker} ຂໍຮຽນແຈ້ງຜົນຄຳຂໍຈອງຫ້ອງປະຊຸມ:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\n\nຜົນ: ${ok?"ອະນຸມັດແລ້ວ ສາມາດໃຊ້ຫ້ອງໄດ້ຕາມເວລາທີ່ຈອງ":"ຂໍອະໄພ ບໍ່ໄດ້ຮັບການອະນຸມັດ"}\n\nຂອບໃຈຫຼາຍໆ`}
+/* ຂໍ້ມູນສຳລັບແຈ້ງຜູ້ຈອງຫຼັງຕັດສິນ */
+function resMsg(kind,id,ok){
+ if(kind==="car"){const b=bookings.find(x=>x.id===id);return b&&{ph:b.tel,tx:carResText(b,ok),who:b.booker}}
+ const b=rbookings.find(x=>x.id===id);return b&&{ph:b.tel,tx:roomResText(b,ok),who:b.booker}}
+function notifyPop(kind,id,status){
+ const m=resMsg(kind,id,status==="approved");if(!m)return;
+ const old=document.getElementById("waPop");if(old)old.remove();
+ const d=document.createElement("div");d.id="waPop";
+ d.innerHTML=`<div class="wp-box" role="dialog" aria-label="ແຈ້ງຜູ້ຈອງ"><b>${status==="approved"?"ອະນຸມັດແລ້ວ":"ບໍ່ອະນຸມັດແລ້ວ"}</b><p>ແຈ້ງຜົນໃຫ້ ${esc(m.who||"ຜູ້ຈອງ")} ທາງ WhatsApp ບໍ?</p>${waNum(m.ph)?`<a class="wa" target="_blank" rel="noopener" href="${waLink(m.ph,m.tx)}">ສົ່ງແຈ້ງຜົນທາງ WhatsApp</a>`:`<div class="note" style="text-align:left">ຜູ້ຈອງບໍ່ໄດ້ໃສ່ເບີ WhatsApp ຈຶ່ງແຈ້ງອັດຕະໂນມັດບໍ່ໄດ້</div>`}<button class="sm" id="wpx" style="margin-top:10px;width:100%;padding:10px">ປິດ</button></div>`;
+ d.onclick=e=>{if(e.target===d||e.target.id==="wpx"||e.target.closest("a.wa"))d.remove()};
+ document.body.appendChild(d)}
 /* ປຸ່ມ WhatsApp ໃນລາຍການ: ລໍຖ້າ → ຜູ້ຮັບຜິດຊອບລົດ, ອະນຸມັດ/ປະຕິເສດ → ຜູ້ຈອງ, ຫ້ອງ → ເບີແຈ້ງເຕືອນຫ້ອງ */
 function waBtn(r){
  if(r.s==="cancelled")return"";
@@ -583,7 +599,9 @@ function waBtn(r){
  if(r.kind==="car"){const b=bookings.find(x=>x.id===r.id);if(!b)return"";
   if(r.s==="pending"){ph=(vOf(b.vehicleId)||{}).owner_phone;tx=carReqText(b,b.id);lb="ແຈ້ງຜູ້ອະນຸມັດ"}
   else{ph=b.tel;tx=carResText(b,r.s==="approved");lb="ແຈ້ງຜູ້ຈອງ"}}
- else{if(r.s!=="pending")return"";const b=rbookings.find(x=>x.id===r.id);if(!b)return"";ph=(rOf(b.roomId)||{}).notify_phone;tx=roomText(b);lb="ແຈ້ງຜູ້ອະນຸມັດ"}
+ else{const b=rbookings.find(x=>x.id===r.id);if(!b)return"";
+  if(r.s==="pending"){ph=(rOf(b.roomId)||{}).notify_phone;tx=roomText(b);lb="ແຈ້ງຜູ້ອະນຸມັດ"}
+  else{ph=b.tel;tx=roomResText(b,r.s==="approved");lb="ແຈ້ງຜູ້ຈອງ"}}
  return waNum(ph)?`<a class="sm wa-sm" target="_blank" rel="noopener" href="${waLink(ph,tx)}">${lb}</a>`:`<button class="sm wa-sm" data-a="nowa" data-id="">${lb}</button>`}
 async function submitCar(){
  const g=i=>$("#"+i).value.trim(),m=$("#msg");
@@ -613,6 +631,7 @@ function vRoom(){
  <div class="grid2"><div><label for="r_s">ເລີ່ມ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_s" type="datetime-local"></div><div><label for="r_e">ສິ້ນສຸດ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_e" type="datetime-local"></div></div>
  <label for="r_title">ຫົວຂໍ້ການປະຊຸມ</label><input id="r_title">
  <div class="grid2"><div><label for="r_who">ຊື່ຜູ້ຈອງ</label><input id="r_who" value="${esc(me.name||"")}"></div><div><label for="r_dep">ພະແນກ</label><input id="r_dep"></div></div>
+ <label for="r_tel">ເບີ WhatsApp ຜູ້ຈອງ (ເພື່ອແຈ້ງຜົນອະນຸມັດ)</label><input id="r_tel" inputmode="tel">
  <label for="r_pax">ຈຳນວນຜູ້ເຂົ້າຮ່ວມ</label><input id="r_pax" type="number" min="1">
  <label for="r_note">ອຸປະກອນທີ່ຕ້ອງການ / ໝາຍເຫດ</label><textarea id="r_note" rows="2"></textarea>
  <button class="btn" id="rsend">ຢືນຢັນການຈອງຫ້ອງ</button><div id="rmsg"></div></div>`;
@@ -622,6 +641,7 @@ async function submitRoom(){
  const g=i=>$("#"+i).value.trim(),m=$("#rmsg");
  const bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`};
  const b={uid:me.id,booker:g("r_who"),roomId:g("r_room"),start:g("r_s"),end:g("r_e"),title:g("r_title"),dep:g("r_dep"),pax:g("r_pax"),note:g("r_note"),cancelled:false,created:new Date().toISOString()};
+ if(g("r_tel"))b.tel=g("r_tel");
  if(!b.booker)return bad("ກະລຸນາໃສ່ຊື່ຜູ້ຈອງ");
  if(!b.roomId||!b.start||!b.end||!b.title)return bad("ກະລຸນາເລືອກຫ້ອງ, ໃສ່ເວລາ ແລະ ຫົວຂໍ້ການປະຊຸມໃຫ້ຄົບ");
  if(b.end<=b.start)return bad("ເວລາສິ້ນສຸດຕ້ອງຢູ່ຫຼັງເວລາເລີ່ມ");
@@ -632,7 +652,7 @@ async function submitRoom(){
  try{b.id=(await db.collection("roomBookings").add(b)).id;const rm=rOf(b.roomId)||{};
   const wt=roomText(b);
   m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`+waBox(rm.notify_phone,wt,"ຜູ້ດູແລຫ້ອງປະຊຸມ");confetti();toast("ສົ່ງຄຳຂໍຈອງຫ້ອງສຳເລັດ");
-  ["r_s","r_e","r_title","r_dep","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
+  ["r_s","r_e","r_title","r_dep","r_tel","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
  $("#rsend").disabled=false;
 }
@@ -640,7 +660,7 @@ async function submitRoom(){
 /* ===== ລາຍການຈອງ ===== */
 async function decide(id,status){
  if(status==="approved"){const rb=rbookings.find(x=>x.id===id),b=rb||bookings.find(x=>x.id===id);const c=b&&(rb?rclash(b.roomId,b.start,b.end,id):clash(b.vehicleId,b.start,b.end,id));if(c&&statusOf(c)==="approved")return toast("ຊ້ອນກັບການຈອງທີ່ອະນຸມັດແລ້ວ")}
- try{await db.doc("decisions/"+id).set({status,by:me.id,at:new Date().toISOString()});toast(status==="approved"?"ອະນຸມັດແລ້ວ":"ບໍ່ອະນຸມັດ");if(status==="approved")confetti()}
+ try{await db.doc("decisions/"+id).set({status,by:me.id,at:new Date().toISOString()});toast(status==="approved"?"ອະນຸມັດແລ້ວ":"ບໍ່ອະນຸມັດ");if(status==="approved")confetti();notifyPop(rbookings.some(x=>x.id===id)?"room":"car",id,status)}
  catch(e){toast("ບໍ່ມີສິດອະນຸມັດ")}
 }
 async function cancelB(kind,id){
@@ -665,7 +685,7 @@ function focusCard(){
  return`<div class="item" style="border:2px solid var(--amber);margin-bottom:14px"><div><div class="t"><span class="kind">${b.kind==="car"?"ລົດ":"ຫ້ອງ"}</span>${esc(b.title)}</div>
   <div class="m num">${fmt(b.start)} – ${fmt(b.end)}</div>
   <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
-  <div><span class="pill ${b.s}">${ST[b.s]}</span><div style="margin-top:6px">${act}${close}</div></div></div>`}
+  <div><span class="pill ${b.s}">${ST[b.s]}</span><div style="margin-top:6px">${act}${waBtn(b)}${close}</div></div></div>`}
 function vList(){
  let rows=items();
  if(filter==="car")rows=rows.filter(r=>r.kind==="car");
