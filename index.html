@@ -393,6 +393,7 @@ const fmt=s=>{if(!s)return"";const[d,t]=s.split("T");const[y,m,dd]=d.split("-");
 const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`};
 
 let user=null,db=null,me={id:null,name:"",email:null,avatarUrl:"",isOwner:false,canEdit:false};
+let focusId=null;const APP_URL="https://sunthana896-cloud.github.io/vari-fleet-booking/";
 let isAdmin=false,tab="car",filter="all",calDay=today(),calKind="car",myEmail="";
 let vehicles=[],rooms=[],bookings=[],rbookings=[],decisions={},profs={},accounts=[],armed=null,loginRef=null,fails=0,lockUntil=0;
 const SB=()=>window.__sb.client;
@@ -499,6 +500,7 @@ function enter(){
  if(pendAdmin)setTimeout(()=>toast("ອີເມວນີ້ເປັນຜູ້ດູແລ ແຕ່ບັນຊີ Claude ນີ້ຍັງບໍ່ມີສິດ Editor"),600);
  const out=document.createElement("button");out.className="sm";out.textContent="ອອກຈາກລະບົບ";
  out.onclick=async()=>{try{await SB().auth.signOut()}catch(e){}location.reload()};$("#meBox").appendChild(out);
+ try{const q=new URLSearchParams(location.search).get("approve");if(q){focusId=q;tab="list";filter="all"}}catch(e){}
  subscribe();render();
 }
 function subscribe(){
@@ -559,8 +561,8 @@ async function submitCar(){
  const c=clash(b.vehicleId,b.start,b.end);
  if(c)return bad(`ລົດຄັນນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#send").disabled=true;
- try{await db.collection("bookings").add(b);const v=vOf(b.vehicleId)||{};
-  const wt=`ແຈ້ງຈອງລົດ\nລົດ: ${v.plate||""} ${v.name||""}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}${b.tel?"\nເບີໂທ: "+b.tel:""}\nເວລາ: ${fmt(b.start)} - ${fmt(b.end)}\nປາຍທາງ: ${b.dest}${b.pax?"\nຜູ້ໂດຍສານ: "+b.pax+" ຄົນ":""}${b.purpose?"\nຈຸດປະສົງ: "+b.purpose:""}\nສະຖານະ: ລໍຖ້າອະນຸມັດ`;
+ try{const bid=(await db.collection("bookings").add(b)).id;const v=vOf(b.vehicleId)||{};
+  const wt=`ສະບາຍດີ${v.owner_name?" ທ່ານ "+v.owner_name:""} ຂໍຮຽນແຈ້ງຄຳຂໍຈອງລົດຫ້ອງການ ເພື່ອພິຈາລະນາອະນຸມັດ ດັ່ງນີ້:\n\nລົດ: ${v.plate||""} ${v.name||""}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}${b.tel?"\nເບີໂທຕິດຕໍ່: "+b.tel:""}\nເວລາໃຊ້ລົດ: ${fmt(b.start)} ຫາ ${fmt(b.end)}\nປາຍທາງ: ${b.dest}${b.pax?"\nຜູ້ໂດຍສານ: "+b.pax+" ຄົນ":""}${b.purpose?"\nຈຸດປະສົງ: "+b.purpose:""}\n\nກະລຸນາກົດລິ້ງລຸ່ມນີ້ ເພື່ອອະນຸມັດ ຫຼື ບໍ່ອະນຸມັດ:\n${APP_URL}?approve=${bid}\n\nຂອບໃຈຫຼາຍໆ`;
   m.innerHTML=`<div class="msg ok">ສົ່ງຄຳຂໍແລ້ວ ກຳລັງລໍຖ້າຜູ້ດູແລອະນຸມັດ</div>`+waBox(v.owner_phone,wt,v.owner_name);confetti();toast("ສົ່ງຄຳຂໍຈອງລົດສຳເລັດ");
   ["f_s","f_e","f_dep","f_tel","f_dest","f_pax","f_pur"].forEach(i=>$("#"+i).value="");$("#f_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
@@ -594,7 +596,7 @@ async function submitRoom(){
  if(c)return bad(`ຫ້ອງນີ້ຖືກຈອງແລ້ວ ໂດຍ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
  $("#rsend").disabled=true;
  try{await db.collection("roomBookings").add(b);const rm=rOf(b.roomId)||{};
-  const wt=`ແຈ້ງຈອງຫ້ອງປະຊຸມ\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} - ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}`;
+  const wt=`ສະບາຍດີ ຂໍຮຽນແຈ້ງການຈອງຫ້ອງປະຊຸມ ດັ່ງນີ້:\n\nຫ້ອງ: ${rm.name||""}\nຫົວຂໍ້: ${b.title}\nຜູ້ຈອງ: ${b.booker}${b.dep?" ("+b.dep+")":""}\nເວລາ: ${fmt(b.start)} ຫາ ${fmt(b.end)}${b.pax?"\nຜູ້ເຂົ້າຮ່ວມ: "+b.pax+" ຄົນ":""}${b.note?"\nອຸປະກອນ/ໝາຍເຫດ: "+b.note:""}\n\nການຈອງນີ້ສຳເລັດແລ້ວ ບໍ່ຕ້ອງອະນຸມັດ. ຂອບໃຈຫຼາຍໆ`;
   m.innerHTML=`<div class="msg ok">ຈອງຫ້ອງສຳເລັດແລ້ວ</div>`+waBox(rm.notify_phone,wt,"ຜູ້ດູແລຫ້ອງປະຊຸມ");confetti();toast("ຈອງຫ້ອງປະຊຸມສຳເລັດ");
   ["r_s","r_e","r_title","r_dep","r_pax","r_note"].forEach(i=>$("#"+i).value="");$("#r_who").value=me.name||""}
  catch(e){bad("ບັນທຶກບໍ່ສຳເລັດ ("+esc(e&&e.code||"error")+"). ອາດຍັງບໍ່ມີສິດຂຽນຂໍ້ມູນ ໃຫ້ຖາມຜູ້ດູແລ.")}
@@ -619,6 +621,17 @@ function items(){
   title:(x?x.name:"(ຫ້ອງຖືກລຶບ)")+" · "+b.title,meta:[b.dep,b.pax?b.pax+" ຄົນ":""].filter(Boolean).join(" · "),note:b.note}});
  return[...a,...r].sort((p,q)=>q.start.localeCompare(p.start));
 }
+function focusCard(){
+ if(!focusId)return"";
+ const b=items().find(x=>x.kind==="car"&&x.id===focusId);
+ const close=`<button class="sm" data-a="fx" data-id="">ປິດ</button>`;
+ if(!b)return`<div class="item" style="border:2px solid var(--amber);margin-bottom:14px"><div class="m">ກຳລັງໂຫຼດຂໍ້ມູນການຈອງ... ຫຼື ບໍ່ພົບການຈອງນີ້</div><div>${close}</div></div>`;
+ let act="";
+ if(b.s==="pending")act=isAdmin?`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`:`<div class="m">ຕ້ອງເປັນຜູ້ດູແລເທົ່ານັ້ນຈຶ່ງອະນຸມັດໄດ້</div>`;
+ return`<div class="item" style="border:2px solid var(--amber);margin-bottom:14px"><div><div class="t"><span class="kind">ລົດ</span>${esc(b.title)}</div>
+  <div class="m num">${fmt(b.start)} – ${fmt(b.end)}</div>
+  <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
+  <div><span class="pill ${b.s}">${ST[b.s]}</span><div style="margin-top:6px">${act}${close}</div></div></div>`}
 function vList(){
  let rows=items();
  if(filter==="car")rows=rows.filter(r=>r.kind==="car");
@@ -626,7 +639,7 @@ function vList(){
  if(filter==="mine")rows=rows.filter(r=>r.uid===me.id);
  if(filter==="pending")rows=rows.filter(r=>r.s==="pending");
  const chips=[["all","ທັງໝົດ"],["car","ລົດ"],["room","ຫ້ອງປະຊຸມ"],["mine","ຂອງຂ້ອຍ"],["pending","ລໍຖ້າອະນຸມັດ"]].map(([k,n])=>`<button class="chip ${filter===k?"on":""}" data-f="${k}">${n}</button>`).join("");
- $("#view").innerHTML=`<div class="panel"><h2>ລາຍການຈອງ</h2><div class="chips">${chips}</div>${rows.length?rows.map((b,i)=>{
+ $("#view").innerHTML=`<div class="panel"><h2>ລາຍການຈອງ</h2>${focusCard()}<div class="chips">${chips}</div>${rows.length?rows.map((b,i)=>{
   const mine=b.uid===me.id,key=b.kind+b.id;let act="";
   if(isAdmin&&b.kind==="car"&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
   if((mine||isAdmin)&&["pending","approved"].includes(b.s))act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
@@ -636,7 +649,7 @@ function vList(){
    <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
    <div><span class="pill ${b.s}">${lbl}</span><div style="margin-top:6px">${act}</div></div></div>`}).join(""):emptyIco(filter==="room"?"room":filter==="car"?"car":"cal","ຍັງບໍ່ມີລາຍການຈອງ")}</div>`;
  $("#view").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filter=c.dataset.f;render()});
- $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
+ $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="fx"?(focusId=null,history.replaceState(null,"",location.pathname),render()):a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
 }
 
 /* ===== ຕາຕະລາງລາຍວັນ (ລົດ / ຫ້ອງ) ===== */
