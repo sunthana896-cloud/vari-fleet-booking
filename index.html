@@ -66,7 +66,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .who b{display:block}.who small{color:var(--mut);word-break:break-all}
 .fmt{font-weight:400;font-size:11px;opacity:.65;white-space:nowrap}
 .role{display:inline-block;font-size:12px;font-weight:700;padding:1px 10px;border-radius:99px;margin-top:2px}
-.role.admin{background:var(--amber);color:#2a1c00}.role.user{background:var(--done);color:var(--mut)}
+.rolesel{width:auto;padding:6px 10px;font-size:13px;border-radius:8px}
+.role.admin{background:var(--amber);color:#2a1c00}.role.user,.role.staff{background:var(--done);color:var(--mut)}
 .dots::after{content:"";animation:dots 1.2s steps(4) infinite}
 .note{font-size:13px;color:var(--mut);margin-top:12px}
 .lf{text-align:left}
@@ -413,7 +414,7 @@ const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+
 
 let user=null,db=null,me={id:null,name:"",email:null,avatarUrl:"",isOwner:false,canEdit:false};
 let focusId=null;const APP_URL="https://sunthana896-cloud.github.io/vari-fleet-booking/";
-let isAdmin=false,tab="car",filter="all",calDay=today(),calKind="car",myEmail="";
+let isAdmin=false,myRole="user",tab="car",filter="all",calDay=today(),calKind="car",myEmail="";
 let vehicles=[],rooms=[],bookings=[],rbookings=[],decisions={},profs={},accounts=[],armed=null,loginRef=null,fails=0,lockUntil=0;
 const SB=()=>window.__sb.client;
 
@@ -461,10 +462,12 @@ async function loadProfile(u,tries){
  const{data,error}=await SB().from("profiles").select("*").eq("id",u.id).maybeSingle();
  if((error||!data)&&tries<4){await new Promise(r=>setTimeout(r,600));return loadProfile(u,tries+1)}
  if(!data)return false;
- myEmail=data.email;isAdmin=data.role==="admin";
+ myEmail=data.email;myRole=data.role;isAdmin=data.role==="admin";
  window.__sb.setMe({id:data.id,name:data.name||data.email,email:data.email,isOwner:isAdmin,canEdit:isAdmin});
  return true;
 }
+const ROLE={admin:"ຜູ້ດູແລ",user:"ພະນັກງານ",staff:"ໃສ່ຂໍ້ມູນເທົ່ານັ້ນ"};
+const isStaff=()=>myRole==="staff";
 const adminsCount=()=>accounts.filter(a=>a.role==="admin").length;
 function showLogin(mode){
  const g=$("#gateBody"),reg=mode==="register";
@@ -515,7 +518,7 @@ function enter(){
  
  $("#gate").hidden=true;$("#app").hidden=false;document.body.classList.add("inapp");
  const pendAdmin=!isAdmin&&ADMIN_EMAILS.includes(myEmail);
- $("#meBox").innerHTML=`<img alt="" src="${esc(me.avatarUrl)}"><div><b>${esc(me.name||"ຜູ້ໃຊ້")}</b><br><small>${esc(myEmail)}</small> <span class="role ${isAdmin?"admin":"user"}">${isAdmin?"ຜູ້ດູແລ":"ພະນັກງານ"}</span></div>`;
+ $("#meBox").innerHTML=`<img alt="" src="${esc(me.avatarUrl)}"><div><b>${esc(me.name||"ຜູ້ໃຊ້")}</b><br><small>${esc(myEmail)}</small> <span class="role ${myRole}">${ROLE[myRole]||"ພະນັກງານ"}</span></div>`;
  if(pendAdmin)setTimeout(()=>toast("ອີເມວນີ້ເປັນຜູ້ດູແລ ແຕ່ບັນຊີ Claude ນີ້ຍັງບໍ່ມີສິດ Editor"),600);
  const out=document.createElement("button");out.className="sm";out.textContent="ອອກຈາກລະບົບ";
  out.onclick=async()=>{try{await SB().auth.signOut()}catch(e){}location.reload()};$("#meBox").appendChild(out);
@@ -593,6 +596,28 @@ function notifyPop(kind,id,status){
  d.onclick=e=>{if(e.target===d||e.target.id==="wpx"||e.target.closest("a.wa"))d.remove()};
  document.body.appendChild(d)}
 /* ປຸ່ມ WhatsApp ໃນລາຍການ: ລໍຖ້າ → ຜູ້ຮັບຜິດຊອບລົດ, ອະນຸມັດ/ປະຕິເສດ → ຜູ້ຈອງ, ຫ້ອງ → ເບີແຈ້ງເຕືອນຫ້ອງ */
+function editTime(kind,id){
+ const b=(kind==="car"?bookings:rbookings).find(x=>x.id===id);if(!b)return;
+ const old=document.getElementById("waPop");if(old)old.remove();
+ const d=document.createElement("div");d.id="waPop";
+ d.innerHTML=`<div class="wp-box" role="dialog" aria-label="ແກ້ເວລາ"><b>ແກ້ເວລາ${kind==="car"?"ໃຊ້ລົດ":"ປະຊຸມ"}</b>
+  <label for="ed_s">ເລີ່ມ</label><input id="ed_s" type="datetime-local" value="${esc(b.start)}">
+  <label for="ed_e">ສິ້ນສຸດ</label><input id="ed_e" type="datetime-local" value="${esc(b.end)}">
+  <div id="ed_m"></div>
+  <button class="btn" id="ed_ok" style="margin-top:12px">ບັນທຶກ</button><button class="sm" id="ed_x" style="margin-top:8px;width:100%;padding:10px">ຍົກເລີກ</button></div>`;
+ d.onclick=e=>{if(e.target===d||e.target.id==="ed_x")d.remove()};
+ document.body.appendChild(d);
+ $("#ed_ok").onclick=async()=>{
+  const st=$("#ed_s").value,en=$("#ed_e").value,m=$("#ed_m"),bad=t=>{m.innerHTML=`<div class="msg err">${t}</div>`};
+  if(!st||!en)return bad("ກະລຸນາໃສ່ເວລາໃຫ້ຄົບ");
+  if(en<=st)return bad("ເວລາສິ້ນສຸດຕ້ອງຢູ່ຫຼັງເວລາເລີ່ມ");
+  const c=kind==="car"?clash(b.vehicleId,st,en,id):rclash(b.roomId,st,en,id);
+  if(c)return bad(`ເວລານີ້ຊ້ອນກັບ ${esc(bookerOf(c))} (${fmt(c.start)} – ${fmt(c.end)})`);
+  $("#ed_ok").disabled=true;
+  try{await db.doc((kind==="car"?"bookings/":"roomBookings/")+id).update({start:st,end:en});d.remove();toast("ແກ້ເວລາແລ້ວ")}
+  catch(e){$("#ed_ok").disabled=false;bad("ບັນທຶກບໍ່ສຳເລັດ (ບໍ່ມີສິດແກ້ໄຂ)")}
+ };
+}
 function waBtn(r){
  if(r.s==="cancelled")return"";
  let ph="",tx="",lb="WhatsApp";
@@ -696,7 +721,9 @@ function vList(){
  $("#view").innerHTML=`<div class="panel"><h2>ລາຍການຈອງ</h2>${focusCard()}<div class="chips">${chips}</div>${rows.length?rows.map((b,i)=>{
   const mine=b.uid===me.id,key=b.kind+b.id;let act="";
   if(isAdmin&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
-  if((mine||isAdmin)&&["pending","approved"].includes(b.s))act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
+  const canMod=isAdmin||(mine&&!isStaff()),live=["pending","approved"].includes(b.s);
+  if(canMod&&live&&(isAdmin||b.s==="pending"))act+=`<button class="sm" data-a="ed" data-k="${b.kind}" data-id="${b.id}">ແກ້ເວລາ</button>`;
+  if(canMod&&live)act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
   act+=waBtn(b);
   const lbl=ST[b.s];
   return `<div class="item" style="animation-delay:${Math.min(i,10)*50}ms"><div><div class="t"><span class="kind">${b.kind==="car"?"ລົດ":"ຫ້ອງ"}</span>${esc(b.title)}</div>
@@ -704,7 +731,7 @@ function vList(){
    <div class="m">${esc(b.booker||nameOf(b.uid))}${b.meta?" · "+esc(b.meta):""}</div>${b.note?`<div class="m">${esc(b.note)}</div>`:""}</div>
    <div><span class="pill ${b.s}">${lbl}</span><div style="margin-top:6px">${act}</div></div></div>`}).join(""):emptyIco(filter==="room"?"room":filter==="car"?"car":"cal","ຍັງບໍ່ມີລາຍການຈອງ")}</div>`;
  $("#view").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filter=c.dataset.f;render()});
- $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="nowa"?toast("ຍັງບໍ່ໄດ້ຕັ້ງເບີ WhatsApp (ຕັ້ງທີ່ແທັບ ຂໍ້ມູນລົດ ແລະ ຫ້ອງ ຫຼື ເບີຜູ້ຈອງຫວ່າງ)"):a==="fx"?(focusId=null,history.replaceState(null,"",location.pathname),render()):a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
+ $("#view").querySelectorAll("[data-a]").forEach(x=>x.onclick=()=>{const id=x.dataset.id,a=x.dataset.a;a==="ed"?editTime(x.dataset.k,id):a==="nowa"?toast("ຍັງບໍ່ໄດ້ຕັ້ງເບີ WhatsApp (ຕັ້ງທີ່ແທັບ ຂໍ້ມູນລົດ ແລະ ຫ້ອງ ຫຼື ເບີຜູ້ຈອງຫວ່າງ)"):a==="fx"?(focusId=null,history.replaceState(null,"",location.pathname),render()):a==="ok"?decide(id,"approved"):a==="no"?decide(id,"rejected"):cancelB(x.dataset.k,id)});
 }
 
 /* ===== ຕາຕະລາງລາຍວັນ (ລົດ / ຫ້ອງ) ===== */
@@ -759,22 +786,21 @@ function resList(title,arr,col,line,emptyTxt){
  return `<div class="panel"><h2>${title}</h2>${arr.length?arr.map((v,i)=>`<div class="item" style="animation-delay:${i*60}ms"><div>${line(v)}</div>
  <div><span class="pill ${v.active===false?"cancelled":"approved"}">${v.active===false?"ປິດໃຊ້ງານ":"ພ້ອມໃຊ້"}</span>${isAdmin?`<div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button class="sm" data-act="phone" data-c="${col}" data-id="${v.id}">ແກ້ເບີ WhatsApp</button><button class="sm" data-act="toggle" data-c="${col}" data-id="${v.id}">${v.active===false?"ເປີດໃຊ້ງານ":"ປິດໃຊ້ງານ"}</button><button class="sm no ${armed===col+v.id?"arm":""}" data-act="del" data-c="${col}" data-id="${v.id}">${armed===col+v.id?"ກົດອີກຄັ້ງເພື່ອລຶບ":"ລຶບ"}</button></div>`:""}</div></div>`).join(""):emptyIco(col==="rooms"?"room":"car",emptyTxt)}</div>`;
 }
-async function setRole(id){
- const a=accounts.find(x=>x.id===id);if(!a)return;
- if(a.role==="admin"&&adminsCount()<=1)return toast("ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ");
- const next=a.role==="admin"?"user":"admin";
- try{await db.doc("profiles/"+id).update({role:next})}catch(e){return toast("ປ່ຽນສິດບໍ່ສຳເລັດ · ສະເພາະຜູ້ດູແລເທົ່ານັ້ນ")}
- if(id===me.id){isAdmin=next==="admin";window.__sb.setMe({isOwner:isAdmin,canEdit:isAdmin})}
- armed=null;toast(next==="admin"?"ຕັ້ງເປັນຜູ້ດູແລແລ້ວ":"ປ່ຽນເປັນພະນັກງານແລ້ວ");updateTabs();render();
+async function setRole(id,next){
+ const a=accounts.find(x=>x.id===id);if(!a||a.role===next)return;
+ if(a.role==="admin"&&adminsCount()<=1){toast("ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ");return render()}
+ try{await db.doc("profiles/"+id).update({role:next})}catch(e){toast("ປ່ຽນສິດບໍ່ສຳເລັດ · ສະເພາະຜູ້ດູແລເທົ່ານັ້ນ (ຫຼື ຍັງບໍ່ໄດ້ຣັນ SQL ສິດ ໃສ່ຂໍ້ມູນເທົ່ານັ້ນ)");return render()}
+ if(id===me.id){myRole=next;isAdmin=next==="admin";window.__sb.setMe({isOwner:isAdmin,canEdit:isAdmin})}
+ armed=null;toast("ຕັ້ງສິດເປັນ "+ROLE[next]+" ແລ້ວ");updateTabs();render();
 }
 function usersPanel(){
  if(!isAdmin)return "";
- return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດຜູ້ໃຊ້ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ</p>
+ return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດຜູ້ໃຊ້ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ · "ໃສ່ຂໍ້ມູນເທົ່ານັ້ນ" = ຈອງໄດ້ ແຕ່ແກ້ໄຂ/ຍົກເລີກບໍ່ໄດ້ (ເໝາະກັບບັນຊີກາງຂອງພະນັກງານ)</p>
  ${accounts.length?accounts.map((a,i)=>`<div class="item" style="animation-delay:${i*60}ms">
   <div><div class="t">${esc(a.name||a.email)}${a.id===me.id?" (ທ່ານ)":""}</div><div class="m">${esc(a.email)}</div></div>
-  <div><span class="pill ${a.role==="admin"?"approved":"pending"}">${a.role==="admin"?"ຜູ້ດູແລ":"ພະນັກງານ"}</span>
+  <div><span class="pill ${a.role==="admin"?"approved":"pending"}">${ROLE[a.role]||a.role}</span>
    <div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
-    <button class="sm" data-u="role" data-k="${esc(a.id)}">${a.role==="admin"?"ປ່ຽນເປັນພະນັກງານ":"ຕັ້ງເປັນຜູ້ດູແລ"}</button>
+    <select class="rolesel" data-u="role" data-k="${esc(a.id)}" aria-label="ສິດ">${Object.entries(ROLE).map(([k,n])=>`<option value="${k}"${a.role===k?" selected":""}>${n}</option>`).join("")}</select>
    </div></div></div>`).join(""):`<div class="note">ຍັງບໍ່ມີຜູ້ໃຊ້</div>`}
  <div class="note" style="text-align:left;margin-top:10px">ການລຶບບັນຊີຖາວອນ ຕ້ອງເຮັດຢູ່ໜ້າ Supabase (Authentication → Users) ເພື່ອຄວາມປອດໄພ</div></div>`;
 }
@@ -793,7 +819,7 @@ function vRes(){
   resList("ລົດທັງໝົດ",vehicles,"vehicles",v=>`<div class="t">${esc(v.plate)}</div><div class="m">${esc(v.name||"")} · ${esc(v.seats||"?")} ບ່ອນນັ່ງ${v.note?" · "+esc(v.note):""}</div><div class="m">ຜູ້ຮັບຜິດຊອບ: ${v.owner_name||v.owner_phone?esc(v.owner_name||"")+(v.owner_phone?" · WhatsApp "+esc(v.owner_phone):""):"ຍັງບໍ່ໄດ້ຕັ້ງ"}</div>`,isAdmin?"ຍັງບໍ່ມີລົດ ເພີ່ມຄັນທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີລົດ")+
   resList("ຫ້ອງປະຊຸມທັງໝົດ",rooms,"rooms",v=>`<div class="t">${esc(v.name)}</div><div class="m">${esc(v.capacity||"?")} ຄົນ${v.note?" · "+esc(v.note):""}</div><div class="m">ແຈ້ງເຕືອນ WhatsApp: ${v.notify_phone?esc(v.notify_phone):"ຍັງບໍ່ໄດ້ຕັ້ງ"}</div>`,isAdmin?"ຍັງບໍ່ມີຫ້ອງ ເພີ່ມຫ້ອງທຳອິດດ້ານເທິງ":"ຍັງບໍ່ມີຫ້ອງປະຊຸມ")+
   usersPanel();
- $("#view").querySelectorAll("button[data-u]").forEach(b=>b.onclick=()=>setRole(b.dataset.k));
+ $("#view").querySelectorAll("select[data-u]").forEach(b=>b.onchange=()=>setRole(b.dataset.k,b.value));
  const a=$("#addcar");if(a)a.onclick=addCar;const r=$("#addroom");if(r)r.onclick=addRoom;
  $("#view").querySelectorAll("button.sm[data-act]").forEach(b=>b.onclick=()=>{
   const col=b.dataset.c,id=b.dataset.id;
