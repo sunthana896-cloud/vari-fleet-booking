@@ -722,7 +722,7 @@ function vList(){
   const mine=b.uid===me.id,key=b.kind+b.id;let act="";
   if(isAdmin&&b.s==="pending")act+=`<button class="sm go" data-a="ok" data-id="${b.id}">ອະນຸມັດ</button><button class="sm no" data-a="no" data-id="${b.id}">ບໍ່ອະນຸມັດ</button>`;
   const canMod=isAdmin||(mine&&!isStaff()),live=["pending","approved"].includes(b.s);
-  if(canMod&&live&&(isAdmin||b.s==="pending"))act+=`<button class="sm" data-a="ed" data-k="${b.kind}" data-id="${b.id}">ແກ້ເວລາ</button>`;
+  if(live&&(isAdmin||(mine&&b.s==="pending")))act+=`<button class="sm" data-a="ed" data-k="${b.kind}" data-id="${b.id}">ແກ້ເວລາ</button>`;
   if(canMod&&live)act+=`<button class="sm ${armed===key?"arm":""}" data-a="cx" data-k="${b.kind}" data-id="${b.id}">${armed===key?"ກົດອີກຄັ້ງເພື່ອຢືນຢັນ":"ຍົກເລີກ"}</button>`;
   act+=waBtn(b);
   const lbl=ST[b.s];
@@ -795,7 +795,7 @@ async function setRole(id,next){
 }
 function usersPanel(){
  if(!isAdmin)return "";
- return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດຜູ້ໃຊ້ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ · "ໃສ່ຂໍ້ມູນເທົ່ານັ້ນ" = ຈອງໄດ້ ແຕ່ແກ້ໄຂ/ຍົກເລີກບໍ່ໄດ້ (ເໝາະກັບບັນຊີກາງຂອງພະນັກງານ)</p>
+ return `<div class="panel"><h2>ຜູ້ໃຊ້ທັງໝົດ</h2><p class="sub">ຕັ້ງສິດຜູ້ໃຊ້ · ຕ້ອງເຫຼືອຜູ້ດູແລຢ່າງໜ້ອຍ 1 ຄົນ · "ໃສ່ຂໍ້ມູນເທົ່ານັ້ນ" = ຈອງ ແລະ ແກ້ເວລາໄດ້ (ສະເພາະທີ່ຍັງລໍຖ້າອະນຸມັດ) ແຕ່ຍົກເລີກບໍ່ໄດ້ (ເໝາະກັບບັນຊີກາງຂອງພະນັກງານ)</p>
  ${accounts.length?accounts.map((a,i)=>`<div class="item" style="animation-delay:${i*60}ms">
   <div><div class="t">${esc(a.name||a.email)}${a.id===me.id?" (ທ່ານ)":""}</div><div class="m">${esc(a.email)}</div></div>
   <div><span class="pill ${a.role==="admin"?"approved":"pending"}">${ROLE[a.role]||a.role}</span>
