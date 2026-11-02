@@ -490,9 +490,8 @@ function showLogin(mode){
  <div class="pww"><input id="l_pw" type="password" autocomplete="${reg?"new-password":"current-password"}"><button type="button" class="eye" data-for="l_pw" aria-label="ສະແດງ ຫຼື ເຊື່ອງລະຫັດຜ່ານ">👁</button></div>
  ${reg?`<label for="l_pw2">ຢືນຢັນລະຫັດຜ່ານ</label><div class="pww"><input id="l_pw2" type="password" autocomplete="new-password"><button type="button" class="eye" data-for="l_pw2" aria-label="ສະແດງ ຫຼື ເຊື່ອງລະຫັດຜ່ານ">👁</button></div>`:""}
  <button class="btn" id="enter" type="submit" style="width:100%">${reg?"ສ້າງບັນຊີ ແລະ ເຂົ້າສູ່ລະບົບ":"ເຂົ້າສູ່ລະບົບ"}</button><div id="lmsg"></div></form>
- <div class="note"><button class="link" id="swap" type="button">${reg?"ມີບັນຊີແລ້ວ? ເຂົ້າສູ່ລະບົບ":"ຍັງບໍ່ມີບັນຊີ? ສ້າງບັນຊີໃໝ່"}</button></div>`;
+ <div class="note">ຖ້າຍັງບໍ່ມີບັນຊີ ໃຫ້ຕິດຕໍ່ຜູ້ດູແລລະບົບ</div>`;
  $("#lf").onsubmit=ev=>{ev.preventDefault();doLogin(reg)};
- $("#swap").onclick=()=>showLogin(reg?"login":"register");
  g.querySelectorAll(".eye").forEach(b=>b.onclick=()=>{
   const i=$("#"+b.dataset.for),show=i.type==="password";
   i.type=show?"text":"password";b.textContent=show?"🙈":"👁";
