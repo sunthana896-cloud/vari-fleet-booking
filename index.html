@@ -23,6 +23,7 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:var(--font);font-size:15px;line-height:1.6;background:var(--bg);color:var(--ink);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
 button,input,select,textarea{font:inherit;color:inherit}
+::placeholder{color:var(--mut);opacity:.6}
 .wrap{max-width:980px;margin:0 auto;padding-block:16px 48px}
 [hidden]{display:none!important}
 
@@ -474,8 +475,8 @@ function showLogin(mode){
  g.innerHTML=`<div class="who"><div><b>${reg?"ສ້າງບັນຊີໃໝ່":"ເຂົ້າສູ່ລະບົບ"}</b><br>
   <small>${reg?"ບັນຊີໃໝ່ຈະເປັນພະນັກງານ · ສິດຜູ້ດູແລໃຫ້ຜູ້ດູແລຕັ້ງໃຫ້ພາຍຫຼັງ":"ໃສ່ອີເມວ ແລະ ລະຫັດຜ່ານຂອງທ່ານ"}</small></div></div>
  <form class="lf" id="lf" novalidate>
- ${reg?`<label for="l_name">ຊື່ ແລະ ນາມສະກຸນ</label><input id="l_name" type="text" autocomplete="name">`:""}
- <label for="l_mail">ອີເມວ</label><input id="l_mail" type="email" autocomplete="username">
+ ${reg?`<label for="l_name">ຊື່ ແລະ ນາມສະກຸນ</label><input id="l_name" placeholder="ເຊັ່ນ: ສົມຊາຍ ວົງສະຫວັນ" type="text" autocomplete="name">`:""}
+ <label for="l_mail">ອີເມວ</label><input id="l_mail" placeholder="ເຊັ່ນ: name@gmail.com" type="email" autocomplete="username">
  <label for="l_pw">${reg?"ຕັ້ງລະຫັດຜ່ານ (ຢ່າງນ້ອຍ 8 ຕົວ)":"ລະຫັດຜ່ານ"}</label>
  <div class="pww"><input id="l_pw" type="password" autocomplete="${reg?"new-password":"current-password"}"><button type="button" class="eye" data-for="l_pw" aria-label="ສະແດງ ຫຼື ເຊື່ອງລະຫັດຜ່ານ">👁</button></div>
  ${reg?`<label for="l_pw2">ຢືນຢັນລະຫັດຜ່ານ</label><div class="pww"><input id="l_pw2" type="password" autocomplete="new-password"><button type="button" class="eye" data-for="l_pw2" aria-label="ສະແດງ ຫຼື ເຊື່ອງລະຫັດຜ່ານ">👁</button></div>`:""}
@@ -569,10 +570,10 @@ function vCar(){
  <div id="noCar" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີລົດໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມລົດທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
  <label for="f_veh">ເລືອກລົດ</label><select id="f_veh">${vehicles.filter(v=>v.active!==false).map(vehOpt).join("")}</select>
  <div class="grid2"><div><label for="f_s">ເລີ່ມໃຊ້ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="f_s" type="datetime-local"></div><div><label for="f_e">ຄືນລົດ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="f_e" type="datetime-local"></div></div>
- <div class="grid2"><div><label for="f_who">ຊື່ຜູ້ຈອງ</label><input id="f_who" value="${esc(me.name||"")}"></div><div><label for="f_dep">ພະແນກ</label><input id="f_dep"></div></div>
- <div class="grid2"><div><label for="f_tel">ເບີໂທຕິດຕໍ່</label><input id="f_tel" inputmode="tel"></div><div><label for="f_pax">ຈຳນວນຜູ້ໂດຍສານ</label><input id="f_pax" type="number" min="1"></div></div>
- <label for="f_dest">ປາຍທາງ</label><input id="f_dest">
- <label for="f_pur">ຈຸດປະສົງ</label><textarea id="f_pur" rows="2"></textarea>
+ <div class="grid2"><div><label for="f_who">ຊື່ຜູ້ຈອງ</label><input id="f_who" placeholder="ເຊັ່ນ: ສົມຊາຍ ວົງສະຫວັນ" value="${esc(me.name||"")}"></div><div><label for="f_dep">ພະແນກ</label><input id="f_dep" placeholder="ເຊັ່ນ: ບໍລິຫານ, ບັນຊີ, ໂຮງງານ"></div></div>
+ <div class="grid2"><div><label for="f_tel">ເບີໂທຕິດຕໍ່</label><input id="f_tel" placeholder="ເຊັ່ນ: 020 5555 5555" inputmode="tel"></div><div><label for="f_pax">ຈຳນວນຜູ້ໂດຍສານ</label><input id="f_pax" placeholder="ເຊັ່ນ: 3" type="number" min="1"></div></div>
+ <label for="f_dest">ປາຍທາງ</label><input id="f_dest" placeholder="ເຊັ່ນ: ສະຖານທີ່ລາຊະການ, ເມືອງໄຊເສດຖາ">
+ <label for="f_pur">ຈຸດປະສົງ</label><textarea id="f_pur" placeholder="ເຊັ່ນ: ໄປສົ່ງເອກະສານ, ພົບລູກຄ້າ" rows="2"></textarea>
  <button class="btn" id="send">ສົ່ງຄຳຂໍຈອງລົດ</button><div id="msg"></div></div>`;
  $("#send").onclick=submitCar;
 }
@@ -654,11 +655,11 @@ function vRoom(){
  <div id="noRoom" class="msg err" ${has?"hidden":""}>ຍັງບໍ່ມີຫ້ອງປະຊຸມໃນລະບົບ. ໃຫ້ຜູ້ດູແລເພີ່ມຫ້ອງທີ່ແທັບ "ຂໍ້ມູນລົດ ແລະ ຫ້ອງ" ກ່ອນ.</div>
  <label for="r_room">ເລືອກຫ້ອງ</label><select id="r_room">${rooms.filter(r=>r.active!==false).map(roomOpt).join("")}</select>
  <div class="grid2"><div><label for="r_s">ເລີ່ມ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_s" type="datetime-local"></div><div><label for="r_e">ສິ້ນສຸດ <span class="fmt">ວ/ດ/ປ ເວລາ</span></label><input id="r_e" type="datetime-local"></div></div>
- <label for="r_title">ຫົວຂໍ້ການປະຊຸມ</label><input id="r_title">
- <div class="grid2"><div><label for="r_who">ຊື່ຜູ້ຈອງ</label><input id="r_who" value="${esc(me.name||"")}"></div><div><label for="r_dep">ພະແນກ</label><input id="r_dep"></div></div>
- <label for="r_tel">ເບີ WhatsApp ຜູ້ຈອງ (ເພື່ອແຈ້ງຜົນອະນຸມັດ)</label><input id="r_tel" inputmode="tel">
- <label for="r_pax">ຈຳນວນຜູ້ເຂົ້າຮ່ວມ</label><input id="r_pax" type="number" min="1">
- <label for="r_note">ອຸປະກອນທີ່ຕ້ອງການ / ໝາຍເຫດ</label><textarea id="r_note" rows="2"></textarea>
+ <label for="r_title">ຫົວຂໍ້ການປະຊຸມ</label><input id="r_title" placeholder="ເຊັ່ນ: ປະຊຸມປະຈຳເດືອນ, ປະຊຸມທີມຂາຍ">
+ <div class="grid2"><div><label for="r_who">ຊື່ຜູ້ຈອງ</label><input id="r_who" placeholder="ເຊັ່ນ: ສົມຊາຍ ວົງສະຫວັນ" value="${esc(me.name||"")}"></div><div><label for="r_dep">ພະແນກ</label><input id="r_dep" placeholder="ເຊັ່ນ: ບໍລິຫານ, ບັນຊີ, ໂຮງງານ"></div></div>
+ <label for="r_tel">ເບີ WhatsApp ຜູ້ຈອງ (ເພື່ອແຈ້ງຜົນອະນຸມັດ)</label><input id="r_tel" placeholder="ເຊັ່ນ: 020 5555 5555" inputmode="tel">
+ <label for="r_pax">ຈຳນວນຜູ້ເຂົ້າຮ່ວມ</label><input id="r_pax" placeholder="ເຊັ່ນ: 10" type="number" min="1">
+ <label for="r_note">ອຸປະກອນທີ່ຕ້ອງການ / ໝາຍເຫດ</label><textarea id="r_note" placeholder="ເຊັ່ນ: ໂປເຈັກເຕີ, ນ້ຳດື່ມ 12 ຖຸກ" rows="2"></textarea>
  <button class="btn" id="rsend">ຢືນຢັນການຈອງຫ້ອງ</button><div id="rmsg"></div></div>`;
  $("#rsend").onclick=submitRoom;
 }
@@ -806,13 +807,13 @@ function usersPanel(){
 }
 function vRes(){
  const add=isAdmin?`<div class="panel"><h2>ເພີ່ມລົດ</h2>
- <div class="grid2"><div><label for="c_plate">ທະບຽນ</label><input id="c_plate"></div><div><label for="c_name">ລຸ້ນ / ຊື່ລົດ</label><input id="c_name"></div></div>
- <div class="grid2"><div><label for="c_seats">ຈຳນວນບ່ອນນັ່ງ</label><input id="c_seats" type="number" min="1"></div><div><label for="c_note">ໝາຍເຫດ</label><input id="c_note"></div></div>
- <div class="grid2"><div><label for="c_on">ຜູ້ຮັບຜິດຊອບລົດ</label><input id="c_on"></div><div><label for="c_op">ເບີ WhatsApp ຜູ້ຮັບຜິດຊອບ</label><input id="c_op" type="tel" inputmode="tel" placeholder="020 5555 5555"></div></div>
+ <div class="grid2"><div><label for="c_plate">ທະບຽນ</label><input id="c_plate" placeholder="ເຊັ່ນ: ກຍ 1234"></div><div><label for="c_name">ລຸ້ນ / ຊື່ລົດ</label><input id="c_name" placeholder="ເຊັ່ນ: Toyota Hilux"></div></div>
+ <div class="grid2"><div><label for="c_seats">ຈຳນວນບ່ອນນັ່ງ</label><input id="c_seats" placeholder="ເຊັ່ນ: 5" type="number" min="1"></div><div><label for="c_note">ໝາຍເຫດ</label><input id="c_note" placeholder="ເຊັ່ນ: ລົດກະບະ, ລົດໄຟຟ້າ"></div></div>
+ <div class="grid2"><div><label for="c_on">ຜູ້ຮັບຜິດຊອບລົດ</label><input id="c_on" placeholder="ເຊັ່ນ: ສົມຊາຍ ວົງສະຫວັນ"></div><div><label for="c_op">ເບີ WhatsApp ຜູ້ຮັບຜິດຊອບ</label><input id="c_op" type="tel" inputmode="tel" placeholder="020 5555 5555"></div></div>
  <button class="btn" id="addcar">ເພີ່ມລົດ</button></div>
  <div class="panel"><h2>ເພີ່ມຫ້ອງປະຊຸມ</h2>
- <div class="grid2"><div><label for="m_name">ຊື່ຫ້ອງ</label><input id="m_name"></div><div><label for="m_cap">ຈຳນວນທີ່ຮອງຮັບ (ຄົນ)</label><input id="m_cap" type="number" min="1"></div></div>
- <label for="m_note">ອຸປະກອນໃນຫ້ອງ / ໝາຍເຫດ</label><input id="m_note">
+ <div class="grid2"><div><label for="m_name">ຊື່ຫ້ອງ</label><input id="m_name" placeholder="ເຊັ່ນ: ຫ້ອງປະຊຸມຊັ້ນ 2"></div><div><label for="m_cap">ຈຳນວນທີ່ຮອງຮັບ (ຄົນ)</label><input id="m_cap" placeholder="ເຊັ່ນ: 10" type="number" min="1"></div></div>
+ <label for="m_note">ອຸປະກອນໃນຫ້ອງ / ໝາຍເຫດ</label><input id="m_note" placeholder="ເຊັ່ນ: ໂປເຈັກເຕີ, ກະດານຂຽນ, ໂທລະພາບ">
  <label for="m_ph">ເບີ WhatsApp ຮັບແຈ້ງເຕືອນການຈອງຫ້ອງ</label><input id="m_ph" type="tel" inputmode="tel" placeholder="020 5555 5555">
  <button class="btn" id="addroom">ເພີ່ມຫ້ອງ</button></div>`:`<div class="msg err" style="margin-bottom:14px">ສະເພາະຜູ້ດູແລທີ່ເພີ່ມ ຫຼື ປິດລົດ ແລະ ຫ້ອງໄດ້</div>`;
  $("#view").innerHTML=add+
