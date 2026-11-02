@@ -199,6 +199,7 @@ body.inapp{padding-inline:0}
  .mbar button{flex:none;width:44px;height:44px;border:1px solid rgba(255,255,255,.3);border-radius:10px;background:transparent;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:0}
  .mbar button span{display:block;width:20px;height:2px;border-radius:2px;background:#fff}
  .mbar b{font-size:15px}
+ .mbar .mbout{width:auto;height:auto;margin-left:auto;padding:8px 12px;font-size:13px;color:#fff;flex-direction:row;gap:0}
  .main{padding:12px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(safe-area-inset-left,0px))}
 }
 
@@ -293,7 +294,7 @@ body.inapp{padding-inline:0}
   </aside>
   <div class="scrim" id="scrim"></div>
   <main class="main">
-   <div class="mbar"><button id="menuBtn" aria-label="ເປີດເມນູ" aria-expanded="false"><span></span><span></span><span></span></button><b>Vari Fleet &amp; Meeting</b></div>
+   <div class="mbar"><button id="menuBtn" aria-label="ເປີດເມນູ" aria-expanded="false"><span></span><span></span><span></span></button><b>Vari Fleet &amp; Meeting</b><button id="mbOut" class="mbout" type="button">ອອກຈາກລະບົບ</button></div>
    <div id="view"></div>
   </main>
  </div>
@@ -445,6 +446,13 @@ async function hashPw(pw,salt,iter){
 }
 
 /* ===== ໜ້າເຂົ້າສູ່ລະບົບ ===== */
+/* ອອກຈາກລະບົບ: ລຶບ session ໃນເຄື່ອງນີ້ແນ່ນອນ (ເຖິງເນັດຂັດຂ້ອງກໍອອກໄດ້) */
+async function doLogout(){
+ try{await SB().auth.signOut({scope:"local"})}catch(e){}
+ try{Object.keys(localStorage).filter(k=>k.indexOf("sb-")===0).forEach(k=>localStorage.removeItem(k))}catch(e){}
+ try{Object.keys(sessionStorage).filter(k=>k.indexOf("sb-")===0).forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+ location.replace(location.pathname);
+}
 async function boot(){
  const c=window.claude;
  try{ if(c&&c.use){user=await c.use("user");db=await c.use("db")} }catch(e){}
@@ -452,6 +460,7 @@ async function boot(){
  const g=$("#gateBody");
  if(!db||!window.__sb){
   g.innerHTML=`<div class="msg err">ເຊື່ອມຕໍ່ຖານຂໍ້ມູນບໍ່ໄດ້</div><div class="note" style="text-align:left"><b>ສາເຫດ:</b><br>• ໂຫຼດ Supabase ບໍ່ສຳເລັດ (ກວດອິນເຕີເນັດ ແລ້ວໂຫຼດໜ້ານີ້ໃໝ່)</div>`;return}
+ try{if(new URLSearchParams(location.search).has("logout")){await doLogout();return}}catch(e){}
  let sess=null;
  try{const r=await SB().auth.getSession();sess=r.data&&r.data.session}catch(e){}
  if(sess&&sess.user&&await loadProfile(sess.user)){enter();return}
@@ -522,7 +531,7 @@ function enter(){
  $("#meBox").innerHTML=`<img alt="" src="${esc(me.avatarUrl)}"><div><b>${esc(me.name||"ຜູ້ໃຊ້")}</b><br><small>${esc(myEmail)}</small> <span class="role ${myRole}">${ROLE[myRole]||"ພະນັກງານ"}</span></div>`;
  if(pendAdmin)setTimeout(()=>toast("ອີເມວນີ້ເປັນຜູ້ດູແລ ແຕ່ບັນຊີ Claude ນີ້ຍັງບໍ່ມີສິດ Editor"),600);
  const out=document.createElement("button");out.className="sm";out.textContent="ອອກຈາກລະບົບ";
- out.onclick=async()=>{try{await SB().auth.signOut()}catch(e){}location.reload()};$("#meBox").appendChild(out);
+ out.onclick=doLogout;$("#meBox").appendChild(out);
  try{const q=new URLSearchParams(location.search).get("approve");if(q){focusId=q;tab="list";filter="all"}}catch(e){}
  subscribe();render();
 }
@@ -549,6 +558,7 @@ function refreshSel(id,arr,warn,fn){const s=$("#"+id);if(!s)return;const cur=s.v
 function setMenu(o){document.body.classList.toggle("menu",o);const m=$("#menuBtn");if(m)m.setAttribute("aria-expanded",o)}
 document.addEventListener("click",e=>{if(e.target.closest("#menuBtn"))setMenu(!document.body.classList.contains("menu"));else if(e.target.id==="scrim")setMenu(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")setMenu(false)});
+document.addEventListener("click",e=>{if(e.target.closest("#mbOut"))doLogout()});
 function updateTabs(){
  const pend=[...bookings,...rbookings].filter(b=>statusOf(b)==="pending").length;
  const list=[["car","ຈອງລົດ"],["room","ຈອງຫ້ອງປະຊຸມ"],["list","ລາຍການຈອງ"+(isAdmin&&pend?`<span class="badge">${pend}</span>`:"")],["cal","ຕາຕະລາງ"],["res","ຂໍ້ມູນລົດ ແລະ ຫ້ອງ"]];
